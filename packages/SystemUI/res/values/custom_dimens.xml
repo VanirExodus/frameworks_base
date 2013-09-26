@@ -16,13 +16,11 @@
  * limitations under the License.
  */
 -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android"
-    android:shape="oval" >
 
-    <solid android:color="@color/screen_pinning_nav_icon_highlight_outer" />
+<resources>
+    <!-- Network traffic monitor single-line text size -->
+    <dimen name="net_traffic_single_text_size">12dp</dimen>
 
-    <size
-        android:height="@dimen/screen_pinning_nav_highlight_outer_size"
-        android:width="@dimen/screen_pinning_nav_highlight_outer_size" />
-
-</shape>
+    <!-- Network traffic monitor multi-line text size -->
+    <dimen name="net_traffic_multi_text_size">8dp</dimen>
+</resources>
