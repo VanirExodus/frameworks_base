@@ -3628,9 +3628,14 @@ public final class Settings {
          * An intent (a flattened Uri String) to launch when user voice launch
          * action is detected. An empty or null string will launch the default
          * voice search activity.
-         * @hide
+		 * @hide
          */
         public static final String VOICE_LAUNCH_INTENT = "voice_launch_intent";
+
+        /* Network speed indicator
+         * @hide
+         */
+        public static final String STATUS_BAR_TRAFFIC = "status_bar_traffic";
 
         /**
          * Whether navigation bar is placed on the left side in landscape mode
