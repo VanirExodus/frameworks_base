@@ -3629,10 +3629,13 @@ public final class Settings {
          * action is detected. An empty or null string will launch the default
          * voice search activity.
 		 * @hide
-         */
+		 */
         public static final String VOICE_LAUNCH_INTENT = "voice_launch_intent";
 
         /* Network speed indicator
+         * 0 = disabled
+	     * 1 = show bits per second
+	     * 2 = show Bytes per second
          * @hide
          */
         public static final String STATUS_BAR_TRAFFIC = "status_bar_traffic";
