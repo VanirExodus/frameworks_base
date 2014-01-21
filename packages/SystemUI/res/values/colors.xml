@@ -125,7 +125,4 @@
 
     <!-- Shadow color for the furthest pixels around the fake shadow for recents. -->
     <color name="fake_shadow_end_color">#03000000</color>
-
-    <!-- Network speed indicator -->
-    <color name="status_bar_traffic_color">#FFFFFFFF</color>
 </resources>
