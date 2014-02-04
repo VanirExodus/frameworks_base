@@ -616,7 +616,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         @Override
         public void onReceive(Context context, Intent intent) {
             final String action = intent.getAction();
-            if (action.equals(Intent.ACTION_SCREENSHOT)) {
+            if (action.equals(Intent.ACTION_POWERMENU)) {
+                showGlobalActionsInternal();
+            } else if (action.equals(Intent.ACTION_POWERMENU_REBOOT)) {
+                mWindowManagerFuncs.rebootTile();
+            } else if (action.equals(Intent.ACTION_SCREENSHOT)) {
                 mHandler.removeCallbacks(mScreenshotRunnable);
                 mHandler.post(mScreenshotRunnable);
             } else if (action.equals("com.android.vanir.RECORD_SCREEN")) {
@@ -634,6 +638,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mIsRegistered = true;
 
                 IntentFilter filter = new IntentFilter();
+                filter.addAction(Intent.ACTION_POWERMENU);
+                filter.addAction(Intent.ACTION_POWERMENU_REBOOT);
                 filter.addAction(Intent.ACTION_SCREENSHOT);
                 filter.addAction("com.android.vanir.RECORD_SCREEN");
                 mContext.registerReceiver(mNavbarActionReceiver, filter);
@@ -1134,6 +1140,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mHandler.removeCallbacks(mScreenRecordRunnable);
     }
 
+    private final Runnable mGlobalMenu = new Runnable() {
+        @Override
+        public void run() {
+            sendCloseSystemWindows(SYSTEM_DIALOG_REASON_GLOBAL_ACTIONS);
+            showGlobalActionsInternal(false);
+        }
+    };
+
     private void powerShortPress(long eventTime) {
         if (mShortPressOnPowerBehavior < 0) {
             mShortPressOnPowerBehavior = mContext.getResources().getInteger(
@@ -1232,12 +1246,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     };
 
     void showGlobalActionsInternal() {
+        showGlobalActionsInternal(false);
+    }
+
+    void showGlobalActionsInternal(boolean showRebootMenu) {
         sendCloseSystemWindows(SYSTEM_DIALOG_REASON_GLOBAL_ACTIONS);
         if (mGlobalActions == null) {
             mGlobalActions = new GlobalActions(mContext, mWindowManagerFuncs);
         }
         final boolean keyguardShowing = keyguardIsShowingTq();
-        mGlobalActions.showDialog(keyguardShowing, isDeviceProvisioned());
+        mGlobalActions.showDialog(keyguardShowing, isDeviceProvisioned(), showRebootMenu);
         if (keyguardShowing) {
             // since it took two seconds of long press to bring this up,
             // poke the wake lock so they have some time to see the dialog.
@@ -4586,6 +4604,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     }
 
     /** {@inheritDoc} */
+    public void toggleGlobalMenu() {
+        mHandler.post(mGlobalMenu);
+    }
+
+    /** {@inheritDoc} */
     @Override
     public void finishLayoutLw() {
         return;
@@ -6970,10 +6993,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private boolean isImmersiveMode(int vis) {
         final int flags = View.SYSTEM_UI_FLAG_IMMERSIVE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        return mNavigationBar != null
-                && (vis & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0
-                && (vis & flags) != 0
-                && canHideNavigationBar();
+        return ((vis & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0 || (vis & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0)
+                && (vis & flags) != 0;
     }
 
     /**
