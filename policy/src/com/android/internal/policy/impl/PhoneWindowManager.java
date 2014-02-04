@@ -669,6 +669,44 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     int     mWifiDisplayCustomRotation = -1;
     private boolean mHasPermanentMenuKey;
 
+    // QS Power menu tile
+    PowerMenuReceiver mPowerMenuReceiver;
+    class PowerMenuReceiver extends BroadcastReceiver {
+        private boolean mIsRegistered = false;
+
+        public PowerMenuReceiver(Context context) {
+        }
+        @Override
+        public void onReceive(Context context, Intent intent) {
+           final String action = intent.getAction();
+            if (action.equals(Intent.ACTION_POWERMENU)) {
+                showGlobalActionsInternal();
+            }
+            if (action.equals(Intent.ACTION_POWERMENU_REBOOT)) {
+                mWindowManagerFuncs.rebootTile();
+            }
+
+        }
+
+        private void registerSelf() {
+            if (!mIsRegistered) {
+                mIsRegistered = true;
+
+                IntentFilter filter = new IntentFilter();
+                filter.addAction(Intent.ACTION_POWERMENU);
+                filter.addAction(Intent.ACTION_POWERMENU_REBOOT);
+                mContext.registerReceiver(mPowerMenuReceiver, filter);
+            }
+        }
+
+        private void unregisterSelf() {
+            if (mIsRegistered) {
+                mIsRegistered = false;
+                mContext.unregisterReceiver(this);
+            }
+        }
+    }
+
     private class PolicyHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
@@ -1134,6 +1172,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mHandler.removeCallbacks(mScreenRecordRunnable);
     }
 
+    private final Runnable mGlobalMenu = new Runnable() {
+        @Override
+        public void run() {
+            sendCloseSystemWindows(SYSTEM_DIALOG_REASON_GLOBAL_ACTIONS);
+            showGlobalActionsInternal(false);
+        }
+    };
+
     private void powerShortPress(long eventTime) {
         if (mShortPressOnPowerBehavior < 0) {
             mShortPressOnPowerBehavior = mContext.getResources().getInteger(
@@ -1232,12 +1278,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     };
 
     void showGlobalActionsInternal() {
+        showGlobalActionsInternal(false);
+    }
+
+    void showGlobalActionsInternal(boolean showRebootMenu) {
         sendCloseSystemWindows(SYSTEM_DIALOG_REASON_GLOBAL_ACTIONS);
         if (mGlobalActions == null) {
             mGlobalActions = new GlobalActions(mContext, mWindowManagerFuncs);
         }
         final boolean keyguardShowing = keyguardIsShowingTq();
-        mGlobalActions.showDialog(keyguardShowing, isDeviceProvisioned());
+        mGlobalActions.showDialog(keyguardShowing, isDeviceProvisioned(), showRebootMenu);
         if (keyguardShowing) {
             // since it took two seconds of long press to bring this up,
             // poke the wake lock so they have some time to see the dialog.
@@ -1514,6 +1564,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (!mPowerManager.isInteractive()) {
             goingToSleep(WindowManagerPolicy.OFF_BECAUSE_OF_USER);
         }
+
+        mPowerMenuReceiver = new PowerMenuReceiver(context);
+        mPowerMenuReceiver.registerSelf();
 
         String deviceKeyHandlerLib = mContext.getResources().getString(
                 com.android.internal.R.string.config_deviceKeyHandlerLib);
@@ -4583,6 +4636,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 }
             } break;
         }
+    }
+
+    /** {@inheritDoc} */
+    public void toggleGlobalMenu() {
+        mHandler.post(mGlobalMenu);
     }
 
     /** {@inheritDoc} */
