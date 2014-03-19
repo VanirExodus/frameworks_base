@@ -2,19 +2,23 @@
 <!--
 /* apps/common/assets/default/default/skins/StatusBar.xml
 **
+<<<<<<< HEAD
 ** Copyright 2011, The Android Open Source Project
 ** Copyright 2014, VanirAOSP && The Android Open Source Project
+=======
+** Copyright 2014, The Android Open Source Project
+>>>>>>> 2d50722... Frameworks_base: Port BatteryBar [1/2]
 **
-** Licensed under the Apache License, Version 2.0 (the "License"); 
-** you may not use this file except in compliance with the License. 
-** You may obtain a copy of the License at 
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
 **
-**     http://www.apache.org/licenses/LICENSE-2.0 
+**     http://www.apache.org/licenses/LICENSE-2.0
 **
-** Unless required by applicable law or agreed to in writing, software 
-** distributed under the License is distributed on an "AS IS" BASIS, 
-** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-** See the License for the specific language governing permissions and 
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
 ** limitations under the License.
 */
 -->
@@ -31,6 +35,25 @@
         android:layout_height="match_parent"
         android:layout_width="match_parent"
         >
+
+        <RelativeLayout
+            android:layout_height="match_parent"
+            android:layout_width="match_parent">
+
+            <com.android.systemui.statusbar.policy.BatteryBarController
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:visibility="gone"
+                systemui:viewLocation="2"
+                android:layout_alignParentTop="true" />
+
+            <com.android.systemui.statusbar.policy.BatteryBarController
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:visibility="gone"
+                systemui:viewLocation="3"
+                android:layout_alignParentBottom="true" />
+        </RelativeLayout>
 
         <!-- layout for custom navbar -->
         <LinearLayout
@@ -76,8 +99,28 @@
         android:paddingTop="0dp"
         >
 
+        <RelativeLayout
+            android:layout_height="match_parent"
+            android:layout_width="match_parent">
+
+            <com.android.systemui.statusbar.policy.BatteryBarController
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:visibility="gone"
+                systemui:viewLocation="2"
+                android:layout_alignParentTop="true" />
+
+            <com.android.systemui.statusbar.policy.BatteryBarController
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:visibility="gone"
+                systemui:viewLocation="3"
+                android:layout_alignParentBottom="true" />
+
+        </RelativeLayout>
+
         <!-- layout for custom navbar -->
-        <LinearLayout 
+        <LinearLayout
             android:layout_height="match_parent"
             android:layout_width="match_parent"
             android:orientation="vertical"
@@ -90,7 +133,7 @@
         </LinearLayout>
 
         <!-- lights out layout to match exactly -->
-        <LinearLayout 
+        <LinearLayout
             android:layout_height="match_parent"
             android:layout_width="match_parent"
             android:orientation="vertical"
