@@ -67,6 +67,7 @@ public class AlternateRecentsComponent implements ActivityOptions.OnAnimationSta
     final public static String ACTION_START_ENTER_ANIMATION = "action_start_enter_animation";
     final public static String ACTION_TOGGLE_RECENTS_ACTIVITY = "action_toggle_recents_activity";
     final public static String ACTION_HIDE_RECENTS_ACTIVITY = "action_hide_recents_activity";
+    final public static String ACTION_CLEAR_RECENTS_ACTIVITY = "action_clear_recents_activity";
 
     final static int sMinToggleDelay = 350;
 
