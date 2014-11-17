@@ -58,6 +58,8 @@ import com.android.internal.util.vanir.NavbarConstants;
 import static com.android.internal.util.vanir.NavbarConstants.*;
 
 import com.android.systemui.R;
+import com.android.systemui.recents.NavigationCallback;
+import com.android.systemui.recents.RecentsActivity;
 import com.android.systemui.statusbar.BaseStatusBar;
 import com.android.systemui.statusbar.DelegateViewHelper;
 import com.android.systemui.statusbar.policy.DeadZone;
@@ -69,7 +71,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import android.util.SparseArray;
 
-public class NavigationBarView extends LinearLayout {
+public class NavigationBarView extends LinearLayout implements NavigationCallback {
     final static boolean DEBUG = false;
     final static String TAG = "PhoneStatusBar/NavigationBarView";
 
@@ -130,6 +132,7 @@ public class NavigationBarView extends LinearLayout {
     private String mIMEKeyLayout;
     private String mDefaultLayout;
     private boolean showingIME;
+    private boolean showingClearAll;
     private int mButtonLayouts;
     private int mCurrentLayout = 0; //the first one
     private float mButtonWidth, mMenuButtonWidth, mLayoutChangerWidth;
@@ -248,6 +251,8 @@ public class NavigationBarView extends LinearLayout {
         mShowMenu = false;
         mDelegateHelper = new DelegateViewHelper(this);
         mTaskSwitchHelper = new NavigationBarViewTaskSwitchHelper(context);
+
+        RecentsActivity.setNavigationCallback(this);
 
         mButtonWidth = res.getDimensionPixelSize(R.dimen.navigation_key_width);
         mMenuButtonWidth = res.getDimensionPixelSize(R.dimen.navigation_menu_key_width);
@@ -404,12 +409,17 @@ public class NavigationBarView extends LinearLayout {
     }
 
     public void setNavigationIconHints(int hints) {
-        setNavigationIconHints(hints, false);
+        setNavigationIconHints(NavigationCallback.NAVBAR_BACK_HINT, hints, false);
     }
 
     public void setNavigationIconHints(int hints, boolean force) {
+        setNavigationIconHints(NavigationCallback.NAVBAR_BACK_HINT, hints, force);
+    }
+
+    public void setNavigationIconHints(int button, int hints, boolean force) {
         if (!force && hints == mNavigationIconHints) return;
         showingIME = (hints & StatusBarManager.NAVIGATION_HINT_BACK_ALT) != 0;
+        showingClearAll = (hints & StatusBarManager.NAVIGATION_HINT_RECENT_ALT) != 0;
 
         if (mDisplayingLayoutIndex != NavbarConstants.LAYOUT_IME && showingIME && mNeedsNav
                 && ((mButtonLayouts > 1 && mImeLayout) || mButtonLayouts == 1)
@@ -429,7 +439,7 @@ public class NavigationBarView extends LinearLayout {
         }
         if (DEBUG) {
             android.widget.Toast.makeText(getContext(),
-                "Navigation icon hints = " + hints,
+                "Navigation icon hints = " + hints+" button = "+button,
                 500).show();
         }
 
@@ -468,6 +478,13 @@ public class NavigationBarView extends LinearLayout {
                 } else {
                     ((KeyButtonView) getButtonView(ACTION_BACK)).setImage();
                 }
+            }
+        }
+        if (getButtonView(ACTION_RECENTS) != null) {
+            if (showingClearAll) {
+                ((ImageView) getButtonView(ACTION_RECENTS)).setImageResource(R.drawable.ic_sysbar_recent_clear);
+            } else {
+                ((KeyButtonView) getButtonView(ACTION_RECENTS)).setImage();
             }
         }
 
@@ -517,6 +534,10 @@ public class NavigationBarView extends LinearLayout {
             setupNavigationButtons(mAllButtonContainers.get(mDisplayingLayoutIndex));
         }
     };
+
+    public int getNavigationIconHints() {
+        return mNavigationIconHints;
+    }
 
     public void setDisabledFlags(int disabledFlags) {
         setDisabledFlags(disabledFlags, false);
@@ -946,6 +967,9 @@ public class NavigationBarView extends LinearLayout {
 
         setNavigationIconHints(mNavigationIconHints, true);
         setDisabledFlags(mDisabledFlags, true /* force */);
+
+        // Reset recents hints after reorienting
+        ((KeyButtonView) getButtonView(ACTION_RECENTS)).setImage();
     }
 
     private void updateTaskSwitchHelper() {
