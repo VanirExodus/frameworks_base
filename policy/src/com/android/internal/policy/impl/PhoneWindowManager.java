@@ -1171,7 +1171,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             }
             int resolvedBehavior = mLongPressOnPowerBehavior;
             KeyguardManager km = (KeyguardManager) mContext.getSystemService(Context.KEYGUARD_SERVICE);
-            boolean locked = km.inKeyguardRestrictedInputMode();
+            boolean locked = km.inKeyguardRestrictedInputMode() && isKeyguardSecure();
             boolean globalActionsOnLockScreen = Settings.System.getInt(
                     mContext.getContentResolver(), Settings.System.LOCKSCREEN_ENABLE_POWER_MENU, 1) == 1;
             if (locked && !globalActionsOnLockScreen) {
