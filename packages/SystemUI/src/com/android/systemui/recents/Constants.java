@@ -55,6 +55,10 @@ public class Constants {
             public static final int SystemServicesProxyMockPackageCount = 3;
             // Defines the number of mock recents tasks to create
             public static final int SystemServicesProxyMockTaskCount = 100;
+            // clear button location
+            public static final int RECENTS_CLEAR_ALL_BOTTOM_RIGHT = 0;
+            public static final int RECENTS_CLEAR_ALL_BOTTOM_LEFT  = 1;
+            public static final int RECENTS_CLEAR_ALL_HIDDEN = 2;
         }
     }
 
