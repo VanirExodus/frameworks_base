@@ -49,6 +49,7 @@ import com.android.systemui.recents.model.RecentsTaskLoader;
 import com.android.systemui.recents.model.SpaceNode;
 import com.android.systemui.recents.model.Task;
 import com.android.systemui.recents.model.TaskStack;
+import com.android.systemui.recents.RecentsConfiguration;
 import com.android.systemui.recents.views.DebugOverlayView;
 import com.android.systemui.recents.views.RecentsView;
 import com.android.systemui.recents.views.SystemBarScrimViews;
@@ -184,8 +185,24 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
 
     /** Updates the set of recent tasks */
     void updateRecentsTasks(Intent launchIntent) {
-        // If AlternateRecentsComponent has preloaded a load plan, then use that to prevent
-        // reconstructing the task stack
+        Resources reso = getResources();
+        // Update the configuration based on the launch intent
+        boolean fromSearchHome = launchIntent.getBooleanExtra(
+                AlternateRecentsComponent.EXTRA_FROM_SEARCH_HOME, false);
+        mConfig.launchedFromHome = fromSearchHome || launchIntent.getBooleanExtra(
+                AlternateRecentsComponent.EXTRA_FROM_HOME, false);
+        mConfig.launchedFromAppWithThumbnail = launchIntent.getBooleanExtra(
+                AlternateRecentsComponent.EXTRA_FROM_APP_THUMBNAIL, false);
+        mConfig.launchedFromAppWithScreenshot = launchIntent.getBooleanExtra(
+                AlternateRecentsComponent.EXTRA_FROM_APP_FULL_SCREENSHOT, false);
+        mConfig.launchedToTaskId = launchIntent.getIntExtra(
+                AlternateRecentsComponent.EXTRA_FROM_TASK_ID, -1);
+        mConfig.launchedWithAltTab = launchIntent.getBooleanExtra(
+                AlternateRecentsComponent.EXTRA_TRIGGERED_FROM_ALT_TAB, false);
+        boolean mShowSearchView = Settings.System.getInt(getContentResolver(),
+                    Settings.System.RECENTS_SHOW_HIDE_SEARCH_BAR, 0) != 1;
+
+        // Load all the tasks
         RecentsTaskLoader loader = RecentsTaskLoader.getInstance();
         RecentsTaskLoadPlan plan = AlternateRecentsComponent.consumeInstanceLoadPlan();
         if (plan == null) {
@@ -246,33 +263,30 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
             }
             mEmptyView.setVisibility(View.VISIBLE);
             mRecentsView.setSearchBarVisibility(View.GONE);
-            findViewById(R.id.clear_recents).setVisibility(View.GONE);
+            findViewById(R.id.floating_action_button).setVisibility(View.GONE);
         } else {
             if (mEmptyView != null) {
                 mEmptyView.setVisibility(View.GONE);
             }
-            findViewById(R.id.clear_recents).setVisibility(View.VISIBLE);
-            boolean showSearchBar = Settings.System.getInt(getContentResolver(),
-                       Settings.System.RECENTS_SHOW_SEARCH_BAR, 1) == 1;
+            findViewById(R.id.floating_action_button).setVisibility(View.VISIBLE);
             if (mRecentsView.hasSearchBar()) {
-                if (showSearchBar) {
+                if (mShowSearchView) {
                     mRecentsView.setSearchBarVisibility(View.VISIBLE);
                 } else {
                     mRecentsView.setSearchBarVisibility(View.GONE);
                 }
             } else {
-                if (showSearchBar) {
+                if (mShowSearchView) {
                     addSearchBarAppWidgetView();
                 }
             }
+        }
 
-            // Update search bar space height
-            if (showSearchBar) {
-                RecentsConfiguration.searchBarSpaceHeightPx = getResources().getDimensionPixelSize(
-                    R.dimen.recents_search_bar_space_height);
-            } else {
-                RecentsConfiguration.searchBarSpaceHeightPx = 0;
-            }
+        // Update search bar space height
+        if (!mShowSearchView) {
+            RecentsConfiguration.searchBarSpaceHeightPx = 0;
+        } else {
+            RecentsConfiguration.searchBarSpaceHeightPx = reso.getDimensionPixelSize(R.dimen.recents_search_bar_space_height);
         }
 
         // Animate the SystemUI scrims into view
@@ -308,6 +322,8 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
                     // Save the app widget id into the settings
                     mConfig.updateSearchBarAppWidgetId(this, widgetInfo.first);
                     mSearchAppWidgetInfo = widgetInfo.second;
+                } else {
+                    mConfig.updateSearchBarAppWidgetId(this, -1);
                 }
             }
         }
@@ -583,6 +599,8 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
 
         // Dismiss Recents to the focused Task or Home
         dismissRecentsToFocusedTaskOrHome(true);
+
+        mRecentsView.endFABanimation();
     }
 
     /** Called when debug mode is triggered */
@@ -612,27 +630,41 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
         }
     }
 
+    /** Called when the enter recents animation is triggered. */
+    public void onEnterAnimationTriggered() {
+        // Animate the SystemUI scrim views
+        mScrimViews.startEnterRecentsAnimation();
+        mRecentsView.startFABanimation();
+    }
+
     /**** RecentsView.RecentsViewCallbacks Implementation ****/
 
     @Override
     public void onExitToHomeAnimationTriggered() {
         // Animate the SystemUI scrim views out
         mScrimViews.startExitRecentsAnimation();
+        mRecentsView.endFABanimation();
     }
 
     @Override
     public void onTaskViewClicked() {
+        // Mark recents as no longer visible
+        AlternateRecentsComponent.notifyVisibilityChanged(false);
+        mVisible = false;
+        mRecentsView.endFABanimation();
     }
 
     @Override
     public void onTaskLaunchFailed() {
         // Return to Home
         dismissRecentsToHomeRaw(true);
+        mRecentsView.endFABanimation();
     }
 
     @Override
     public void onAllTaskViewsDismissed() {
         mFinishLaunchHomeRunnable.run();
+        mRecentsView.endFABanimation();
     }
 
     @Override
