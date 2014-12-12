@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class SubscriptionManager implements BaseColumns {
     private static final String LOG_TAG = "SUB";
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final boolean VDBG = false;
 
     /** An invalid phone identifier */

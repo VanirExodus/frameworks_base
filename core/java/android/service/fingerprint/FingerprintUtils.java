@@ -29,7 +29,7 @@ import java.util.Arrays;
  */
 public
 class FingerprintUtils {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final String TAG = "FingerprintUtils";
 
     public static int[] getFingerprintIdsForUser(ContentResolver res, int userId) {
