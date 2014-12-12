@@ -23,7 +23,7 @@ import java.util.concurrent.CountDownLatch;
 @SystemApi
 public class RttManager {
 
-    private static final boolean DBG = true;
+    private static final boolean DBG = false;
     private static final String TAG = "RttManager";
 
     public static final int RTT_TYPE_UNSPECIFIED    = 0;

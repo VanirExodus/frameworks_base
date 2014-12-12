@@ -40,7 +40,7 @@ import com.android.systemui.recents.AlternateRecentsComponent;
 
 public class Recents extends SystemUI implements RecentsComponent {
     private static final String TAG = "Recents";
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     // Which recents to use
     boolean mUseAlternateRecents = true;
