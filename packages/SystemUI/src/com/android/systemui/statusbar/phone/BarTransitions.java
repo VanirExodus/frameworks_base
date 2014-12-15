@@ -82,6 +82,12 @@ public class BarTransitions {
         return mMode;
     }
 
+    public void setWarningColor(int color) {
+        if (mBarBackground != null) {
+            mBarBackground.setWarningColor(color);
+        }
+    }
+
     public void transitionTo(int mode, boolean animate) {
         // low-end devices do not support translucent modes, fallback to opaque
         if (!HIGH_END && (mode == MODE_SEMI_TRANSPARENT || mode == MODE_TRANSLUCENT
@@ -123,11 +129,11 @@ public class BarTransitions {
     }
 
     private static class BarBackgroundDrawable extends Drawable {
-        private int mOpaque;
-        private int mSemiTransparent;
-        private int mTransparent;
+        private final int mOpaque;
+        private final int mSemiTransparent;
+        private final int mTransparent;
         private int mWarning;
-        private Drawable mGradient;
+        private final Drawable mGradient;
         private final TimeInterpolator mInterpolator;
 
         private int mMode = -1;
@@ -203,6 +209,12 @@ public class BarTransitions {
         protected void onBoundsChange(Rect bounds) {
             super.onBoundsChange(bounds);
             mGradient.setBounds(bounds);
+        }
+
+        public void setWarningColor(int color) {
+            if (!DEBUG_COLORS) {
+                mWarning = color;
+            }
         }
 
         public void applyModeBackground(int oldMode, int newMode, boolean animate) {
