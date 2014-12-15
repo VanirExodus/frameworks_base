@@ -72,6 +72,7 @@ import android.media.session.MediaController;
 import android.media.session.MediaSession;
 import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -408,6 +409,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     int mInitialTouchX;
     int mInitialTouchY;
 
+    private int mBatterySaverWarningStyle;
     private int mBatterySaverWarningColor;
     // for disabling the status bar
     int mDisabled = 0;
@@ -445,7 +447,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.BRIGHTNESS_ADJUSTMENT), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.BATTERY_SAVER_MODE_COLOR),
+                    Settings.System.BATTERY_SAVER_MODE_COLOR_STYLE),
+                    false, this, UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.BATTERY_SAVER_MODE_CUSTOM_COLOR),
                     false, this, UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.ENABLE_NAVIGATION_RING), false, this);
@@ -463,11 +468,35 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         @Override
          public void onChange(boolean selfChange, Uri uri) {
              if (uri.equals(Settings.System.getUriFor(
-                     Settings.System.BATTERY_SAVER_MODE_COLOR))) {
-                     mBatterySaverWarningColor = Settings.System.getIntForUser(
-                             mContext.getContentResolver(),
-                             Settings.System.BATTERY_SAVER_MODE_COLOR, -2,
+                     Settings.System.BATTERY_SAVER_MODE_COLOR_STYLE))) {
+                    mBatterySaverWarningStyle = Settings.System.getIntForUser(mContext.getContentResolver(),
+                             Settings.System.BATTERY_SAVER_MODE_COLOR_STYLE, 0, UserHandle.USER_CURRENT);
+
+                    switch (mBatterySaverWarningStyle) {
+                    case 1:
+                        mBatterySaverWarningColor = Settings.System.getIntForUser(mContext.getContentResolver(),
+                                Settings.System.BATTERY_SAVER_MODE_CUSTOM_COLOR, -2,
+                                UserHandle.USER_CURRENT);
+                        if (mBatterySaverWarningColor == -2) {
+                             mBatterySaverWarningColor = mContext.getResources()
+                                     .getColor(com.android.internal.R.color.battery_saver_mode_color);
+                        }
+                        break;
+                    case 2:
+                        mBatterySaverWarningColor = 16777215;
+                        break;
+                    default:
+                        mBatterySaverWarningColor = mContext.getResources()
+                                .getColor(com.android.internal.R.color.battery_saver_mode_color);
+                    }
+
+             } else if (uri.equals(Settings.System.getUriFor(
+                     Settings.System.BATTERY_SAVER_MODE_CUSTOM_COLOR))) {
+
+                     mBatterySaverWarningColor = Settings.System.getIntForUser(mContext.getContentResolver(),
+                             Settings.System.BATTERY_SAVER_MODE_CUSTOM_COLOR, -2,
                              UserHandle.USER_CURRENT);
+
                      if (mBatterySaverWarningColor == -2) {
                          mBatterySaverWarningColor = mContext.getResources()
                                  .getColor(com.android.internal.R.color.battery_saver_mode_color);
@@ -1066,15 +1095,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
 
         mEdgeBorder = res.getDimensionPixelSize(R.dimen.status_bar_edge_ignore);
-
-        mBatterySaverWarningColor = Settings.System.getIntForUser(
-                mContext.getContentResolver(),
-                Settings.System.BATTERY_SAVER_MODE_COLOR, -2,
-                UserHandle.USER_CURRENT);
-        if (mBatterySaverWarningColor == -2) {
-            mBatterySaverWarningColor = mContext.getResources()
-                   .getColor(com.android.internal.R.color.battery_saver_mode_color);
-        }
 
         // set the inital view visibility
         setAreThereNotifications();
