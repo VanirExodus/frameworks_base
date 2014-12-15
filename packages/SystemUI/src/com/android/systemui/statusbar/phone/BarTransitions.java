@@ -129,11 +129,11 @@ public class BarTransitions {
     }
 
     private static class BarBackgroundDrawable extends Drawable {
-        private final int mOpaque;
-        private final int mSemiTransparent;
-        private final int mTransparent;
+        private int mOpaque;
+        private int mSemiTransparent;
+        private int mTransparent;
         private int mWarning;
-        private final Drawable mGradient;
+        private Drawable mGradient;
         private final TimeInterpolator mInterpolator;
 
         private int mMode = -1;
