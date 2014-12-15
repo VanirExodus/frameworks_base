@@ -2118,11 +2118,19 @@ public final class Settings {
         public static final int SCREEN_BRIGHTNESS_MODE_AUTOMATIC = 1;
 
         /**
-         * Defines the status and navigation bar color is battery safe mode is enabled.
-         *
+         * Defines whether to use custom default or none for the navigation and status bar colors
+         * when battery saver mode is enabled
          * @hide
          */
-        public static final String BATTERY_SAVER_MODE_COLOR = "battery_save_mode_color";
+        public static final String BATTERY_SAVER_MODE_COLOR_STYLE = "battery_save_mode_color_style";
+
+
+        /**
+         * Defines the navigation and status bar color when battery saver mode is enabled
+         * and style is set to custom.
+         * @hide
+         */
+        public static final String BATTERY_SAVER_MODE_CUSTOM_COLOR = "battery_save_mode_custom_color";
 
         /**
          * Whether to show the IME switcher in the status bar
