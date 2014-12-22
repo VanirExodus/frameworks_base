@@ -69,4 +69,8 @@
 
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permdesc_recordScreen">Allows the app to record the users screen</string>
+
+    <!-- General Strings -->
+    <string name="default_string">Default</string>
+
 </resources>
