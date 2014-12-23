@@ -2064,6 +2064,12 @@ public final class Settings {
          */
         public static final int SCREEN_BRIGHTNESS_MODE_AUTOMATIC = 1;
 
+       /**
+         * Timeout for ambient display notification
+         * @hide
+         */
+        public static final String DOZE_TIMEOUT = "doze_timeout";
+
         /**
          * Whether to show the IME switcher in the status bar
          * @hide
