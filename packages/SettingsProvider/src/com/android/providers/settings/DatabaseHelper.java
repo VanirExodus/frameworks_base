@@ -2414,6 +2414,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+    private void loadHeadsUpSetting(SQLiteStatement stmt) {
+        String dndValues = mContext.getResources()
+                .getString(R.string.def_heads_up_notification_dnd_values);
+        String blackListValues = mContext.getResources()
+                .getString(R.string.def_heads_up_notification_blacklist_values);
+        if (!TextUtils.isEmpty(dndValues)) {
+            loadSetting(stmt, Settings.System.HEADS_UP_NOTIFICATION, "0");
+            loadSetting(stmt, Settings.System.HEADS_UP_CUSTOM_VALUES, dndValues);
+            loadSetting(stmt, Settings.System.HEADS_UP_BLACKLIST_VALUES, blackListValues);
+        }
+    }
+
     private void loadSettings(SQLiteDatabase db) {
         loadSystemSettings(db);
         loadSecureSettings(db);
@@ -2475,6 +2487,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             loadIntegerSetting(stmt, Settings.System.QS_QUICK_PULLDOWN,
                     R.integer.def_qs_quick_pulldown);
+
+            loadHeadsUpSetting(stmt);
 
         } finally {
             if (stmt != null) stmt.close();
