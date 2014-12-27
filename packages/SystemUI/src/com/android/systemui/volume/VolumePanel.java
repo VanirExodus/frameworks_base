@@ -1496,7 +1496,6 @@ public class VolumePanel extends Handler {
                                 }
                             }
                         });
-                        }
                     }
                 }
                 synchronized (sSafetyWarningLock) {
