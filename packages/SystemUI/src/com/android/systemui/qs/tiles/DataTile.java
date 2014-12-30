@@ -83,15 +83,16 @@ public class DataTile extends QSTile<QSTile.BooleanState> {
     private void setEnabled(boolean enabled) {
         // Do not make mobile data on/off if airplane mode on or has no sim card
         if (Settings.Global.getInt(mContext.getContentResolver(),
-                Settings.Global.AIRPLANE_MODE_ON, 0) != 0 || !hasIccCard()) {
+                Settings.Global.AIRPLANE_MODE_ON, 0) != 0 || !mTelephonyManager.hasIccCard()) {
             return;
         }
-        int phoneCount = mTelephonyManager.getPhoneCount();
+        mTelephonyManager.setDataEnabled(enabled);
+        Settings.Global.putInt(mContext.getContentResolver(),
+                Settings.Global.MOBILE_DATA, (enabled) ? 1 : 0);
+        int phoneCount = mTelephonyManager.getDefault().getPhoneCount();
         for (int i = 0; i < phoneCount; i++) {
             Settings.Global.putInt(mContext.getContentResolver(),
                     Settings.Global.MOBILE_DATA + i, (enabled) ? 1 : 0);
-            long[] subId = SubscriptionManager.getSubId(i);
-            mTelephonyManager.setDataEnabledUsingSubId(subId[0], enabled);
         }
     }
 

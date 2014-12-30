@@ -288,7 +288,7 @@
     <!-- Zen toast visibility duration -->
     <integer name="zen_toast_visible_duration">500</integer>
     <!-- Whether to enable data switch or not -->
-    <bool name="config_enableDataSwitch">false</bool>
+    <bool name="config_enableDataSwitch">true</bool>
 
     <!-- number of saved networks | can be increased with an overlay for wifi only devices -->
     <integer name="wifi_notifications_remembered_connections">8</integer>
