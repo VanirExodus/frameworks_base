@@ -3414,6 +3414,12 @@ public final class Settings {
          */
         public static final String VOICE_WAKEUP = "voice_wakeup";
 
+        /** Whether to vibrate when quick settings tile is pressed.
+         *
+         * @hide
+         */
+        public static final String QUICK_SETTINGS_TILES_VIBRATE = "quick_settings_vibrate";
+
         /**
          * An intent (a flattened Uri String) to launch when user voice launch
          * action is detected. An empty or null string will launch the default
