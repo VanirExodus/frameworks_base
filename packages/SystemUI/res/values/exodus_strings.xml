@@ -16,11 +16,12 @@
 ** limitations under the License.
 */
 -->
-
-<!-- These resources are around just to allow their values to be customized
-     for TV products.  Do not translate. -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
-    <!-- Flags enabling default window features. See Window.java -->
-    <bool name="config_defaultWindowFeatureOptionsPanel">false</bool>
+    <!-- Exodus -->
+    <string name="exodus">EXODUS</string>
+
+    <!-- Exodus updater -->
+    <string name="title_tile_update">Exodus updates</string>
+    <string name="update_check_failed">A data connection is required.</string>
 </resources>
