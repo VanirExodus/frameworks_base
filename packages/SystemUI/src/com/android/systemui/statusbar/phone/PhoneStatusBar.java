@@ -2651,7 +2651,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mExodusLabel.animate()
                 .alpha(0f)
                 .setDuration(200)
-                .setStartDelay(1000)
+                .setStartDelay(1200)
                 .setInterpolator(ALPHA_OUT)
                 .withEndAction(new Runnable() {
             @Override
