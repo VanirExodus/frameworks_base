@@ -664,10 +664,6 @@ public class NotificationPanelView extends PanelView implements
                 && event.getY(event.getActionIndex()) < mStatusBarMinHeight) {
             mTwoFingerQsExpand = true;
             requestPanelHeightUpdate();
-
-            // Normally, we start listening when the panel is expanded, but here we need to start
-            // earlier so the state is already up to date when dragging down.
-            setListening(true);
         }
         super.onTouchEvent(event);
         return true;
@@ -1494,8 +1490,6 @@ public class NotificationPanelView extends PanelView implements
         mScrollYOverride = -1;
         if (mExpandedHeight == 0f) {
             setListening(false);
-        } else {
-            setListening(true);
         }
         mTwoFingerQsExpand = false;
         mTwoFingerQsExpandPossible = false;
@@ -1540,6 +1534,7 @@ public class NotificationPanelView extends PanelView implements
         } else if (mQsExpanded) {
             mTwoFingerQsExpand = true;
         }
+        setListening(true);
     }
 
     @Override
