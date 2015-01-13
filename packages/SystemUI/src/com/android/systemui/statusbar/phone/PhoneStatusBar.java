@@ -316,9 +316,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     // [+>
     View mMoreIcon;
-    Clock mCenterClock;
-    LinearLayout mCenterClockLayout;
-    Clock mClock;
+    TextView mClockView;
+    Clock mClockController;
     private int mClockLocation;
 
     // expanded notifications
@@ -447,6 +446,8 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     Settings.System.GLOBAL_IMMERSIVE_MODE_STATE), false, this);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.STATUS_BAR_GREETING), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_CLOCK), false, this);
             update();
         }
 
@@ -467,6 +468,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mBrightnessControl = brightnessValue == 1;
             mSearchPanelAllowed = Settings.System.getIntForUser(
                     resolver, Settings.System.ENABLE_NAVIGATION_RING, 1, UserHandle.USER_CURRENT) == 1;
+
+            mClockLocation = Settings.System.getInt(resolver, Settings.System.STATUS_BAR_CLOCK, Clock.STYLE_CLOCK_RIGHT);
+            updateClockView();
 
             mImmersive = Settings.System.getIntForUser(resolver,
                     Settings.System.GLOBAL_IMMERSIVE_MODE_STATE, 0,
@@ -490,6 +494,37 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             }
 
             mQSPanel.updateBrightnessSlider(brightnessValue == 2);
+        }
+    }
+
+    void updateClockView() {
+        mClockView.setVisibility(View.GONE);
+        switch (mClockLocation) {
+            default:
+            case 0:
+                mClockView = (TextView) mStatusBarView.findViewById(R.id.clock);
+                // Don't set visibility here...
+                break;
+            case 1:
+                mClockView = (TextView) mStatusBarView.findViewById(R.id.clock);
+                mClockView.setVisibility(View.VISIBLE);
+                return;
+            case 2:
+                mClockView = (TextView) mStatusBarView.findViewById(R.id.center_clock);
+                mClockView.setVisibility(View.VISIBLE);
+                break;
+            case 3:
+                mClockView = (TextView) mStatusBarView.findViewById(R.id.left_clock);
+                mClockView.setVisibility(View.VISIBLE);
+                break;
+        }
+        setClockAndDateStatus();
+        mClockController.updateClockView(mClockView);
+    }
+
+    public void setClockAndDateStatus() {
+        if (mNotificationIcons != null) {
+            mNotificationIcons.setClockAndDateStatus(mClockLocation);
         }
     }
 
@@ -916,12 +951,13 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mMoreIcon = mStatusBarView.findViewById(R.id.moreIcon);
         mNotificationIcons.setOverflowIndicator(mMoreIcon);
         mStatusBarContents = (LinearLayout)mStatusBarView.findViewById(R.id.status_bar_contents);
-        mClock = (Clock)mStatusBarView.findViewById(R.id.clock);
-        mCenterClock = (Clock)mStatusBarView.findViewById(R.id.center_clock);
-        mCenterClockLayout = (LinearLayout)mStatusBarView.findViewById(R.id.center_clock_layout);
-        if (mCenterClock != null) {
-            mCenterClock.setPhoneStatusBar(this);
-        }
+
+        // Exodus Clock Options
+        mClockView = (TextView) mStatusBarView.findViewById(R.id.clock);
+        mClockLocation = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.STATUS_BAR_CLOCK, Clock.STYLE_CLOCK_RIGHT);
+        mClockController = new Clock(mContext, mClockView);
+        updateClockView();
 
         mStackScroller = (NotificationStackScrollLayout) mStatusBarWindow.findViewById(
                 R.id.notification_stack_scroller);
@@ -2039,19 +2075,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     }
 
     public void showClock(boolean show) {
-        if (mClockLocation == 0 && mClock != null) {
-            mClock.updateClockVisibility(show);
-        }
-        if (mClockLocation == 1 && mCenterClock != null) {
-            mCenterClock.updateClockVisibility(show);
-        }
-    }
-
-    public void setClockAndDateStatus(int width, int mode, boolean enabled) {
-        if (mNotificationIcons != null) {
-            mNotificationIcons.setClockAndDateStatus(width, mode, enabled);
-        }
-        mClockLocation = mode;
+        mClockView.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     public void findAndUpdateMediaNotifications() {
@@ -2356,17 +2380,17 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
         if ((diff & StatusBarManager.DISABLE_SYSTEM_INFO) != 0) {
             mSystemIconArea.animate().cancel();
-            mCenterClockLayout.animate().cancel();
+            mClockView.animate().cancel();
             if ((state & StatusBarManager.DISABLE_SYSTEM_INFO) != 0) {
+                if (mClockLocation == Clock.STYLE_CLOCK_CENTER || mClockLocation == Clock.STYLE_CLOCK_LEFT) {
+                    animateStatusBarHide(mClockView, animate);
+                }
                 animateStatusBarHide(mSystemIconArea, animate);
-                if (mClockLocation == Clock.STYLE_CLOCK_CENTER) {
-                    animateStatusBarHide(mCenterClockLayout, animate);
-                }
             } else {
-                animateStatusBarShow(mSystemIconArea, animate);
-                if (mClockLocation == Clock.STYLE_CLOCK_CENTER) {
-                    animateStatusBarShow(mCenterClockLayout, animate);
+                if (mClockLocation == Clock.STYLE_CLOCK_CENTER || mClockLocation == Clock.STYLE_CLOCK_LEFT) {
+                    animateStatusBarShow(mClockView, animate);
                 }
+                animateStatusBarShow(mSystemIconArea, animate);
             }
         }
 
@@ -3347,11 +3371,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mStatusBarContents.startAnimation(loadAnim(com.android.internal.R.anim.push_up_out, null));
             mTickerView.setVisibility(View.VISIBLE);
             mTickerView.startAnimation(loadAnim(com.android.internal.R.anim.push_up_in, null));
-            if (mClockLocation == Clock.STYLE_CLOCK_CENTER) {
-                mCenterClockLayout.setVisibility(View.GONE);
-                mCenterClockLayout.startAnimation(
-                        loadAnim(com.android.internal.R.anim.push_up_out, null));
-            }
+            mClockView.setVisibility(View.GONE);
+            mClockView.startAnimation(
+                    loadAnim(com.android.internal.R.anim.push_up_out, null));
         }
 
         @Override
@@ -3361,12 +3383,10 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mStatusBarContents.startAnimation(loadAnim(com.android.internal.R.anim.push_down_in, null));
             mTickerView.setVisibility(View.GONE);
             mTickerView.startAnimation(loadAnim(com.android.internal.R.anim.push_down_out,
-                            mTickingDoneListener));
-            if (mClockLocation == Clock.STYLE_CLOCK_CENTER) {
-                mCenterClockLayout.setVisibility(View.VISIBLE);
-                mCenterClockLayout.startAnimation(
-                        loadAnim(com.android.internal.R.anim.push_down_in, null));
-            }
+                    mTickingDoneListener));
+            mClockView.setVisibility(View.VISIBLE);
+            mClockView.startAnimation(
+                    loadAnim(com.android.internal.R.anim.push_down_in, null));
         }
 
         public void tickerHalting() {
@@ -3375,18 +3395,16 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 mStatusBarContents.setVisibility(View.VISIBLE);
                 mStatusBarContents
                         .startAnimation(loadAnim(com.android.internal.R.anim.fade_in, null));
-                if (mClockLocation == Clock.STYLE_CLOCK_CENTER) {
-                    mCenterClockLayout.setVisibility(View.VISIBLE);
-                    mCenterClockLayout
-                            .startAnimation(loadAnim(com.android.internal.R.anim.fade_in, null));
-                }
+                mClockView.setVisibility(View.VISIBLE);
+                mClockView
+                        .startAnimation(loadAnim(com.android.internal.R.anim.fade_in, null));
             }
             mTickerView.setVisibility(View.GONE);
             // we do not animate the ticker away at this point, just get rid of it (b/6992707)
         }
     }
 
-    Animation.AnimationListener mTickingDoneListener = new Animation.AnimationListener() {;
+    Animation.AnimationListener mTickingDoneListener = new Animation.AnimationListener() {
         public void onAnimationEnd(Animation animation) {
             mTicking = false;
         }

@@ -16,15 +16,11 @@
 
 package com.android.systemui.statusbar.policy;
 
-import android.app.ActivityManagerNative;
-import android.app.StatusBarManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.TypedArray;
 import android.database.ContentObserver;
 import android.os.Bundle;
 import android.os.Handler;
@@ -34,14 +30,10 @@ import android.text.SpannableStringBuilder;
 import android.text.format.DateFormat;
 import android.text.style.CharacterStyle;
 import android.text.style.RelativeSizeSpan;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 
 import com.android.systemui.DemoMode;
 import com.android.systemui.R;
-import com.android.systemui.statusbar.phone.PhoneStatusBar;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -53,41 +45,32 @@ import libcore.icu.LocaleData;
 /**
  * Digital clock for the status bar.
  */
-public class Clock extends TextView implements DemoMode {
-    private boolean mAttached;
-    private Calendar mCalendar;
-    private Locale mLocale;
-    private static String mClockFormatString;
-    private static SimpleDateFormat mClockFormat;
-    private static SettingsObserver settingsObserver;
-    private static Handler mHandler;
-    private static boolean mShowClock = true;
-    private static PhoneStatusBar mStatusBar;
-
-    private static Clock mRightClock, mCenterClock;
-
-    //for memoization
-    private boolean mIsCenter;
-    private boolean mTagChecked;
-
-    private boolean mDemoMode;
+public class Clock implements DemoMode {
 
     private static final int AM_PM_STYLE_NORMAL  = 0;
     private static final int AM_PM_STYLE_SMALL   = 1;
     private static final int AM_PM_STYLE_GONE    = 2;
-    private static int AM_PM_STYLE = AM_PM_STYLE_GONE;
-
-
-    private static final char MAGIC1 = '\uEF00';
-    private static final char MAGIC2 = '\uEF01';
 
     public static final int STYLE_HIDE_CLOCK    = 0;
     public static final int STYLE_CLOCK_RIGHT   = 1;
     public static final int STYLE_CLOCK_CENTER  = 2;
+    public static final int STYLE_CLOCK_LEFT    = 3;
 
-    private static int mClockStyle = STYLE_CLOCK_RIGHT;
+    private static final char MAGIC1 = '\uEF00';
+    private static final char MAGIC2 = '\uEF01';
+
+    static Context mContext;
+    private static TextView mClockView;
+    private static Calendar mCalendar;
+    private static Locale mLocale;
+    private static String mClockFormatString;
+    private static SimpleDateFormat mClockFormat;
+    private static SettingsObserver settingsObserver;
+
     private static int mAmPmStyle;
-    private static int mClockAndDateWidth;
+    private static int AM_PM_STYLE = AM_PM_STYLE_GONE;
+    private static boolean mDemoMode;
+    private static boolean mAttached;
 
     class SettingsObserver extends ContentObserver {
         SettingsObserver(Handler handler) {
@@ -98,8 +81,6 @@ public class Clock extends TextView implements DemoMode {
             ContentResolver resolver = mContext.getContentResolver();
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.STATUS_BAR_AM_PM), false, this);
-            resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_CLOCK), false, this);
             updateSettings();
         }
 
@@ -107,43 +88,26 @@ public class Clock extends TextView implements DemoMode {
             mContext.getContentResolver().unregisterContentObserver(this);
         }
 
-        @Override public void onChange(boolean selfChange) {
+        @Override
+        public void onChange(boolean selfChange) {
             updateSettings();
         }
     }
 
-    public Clock(Context context) {
-        this(context, null);
-    }
-
-    public Clock(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public Clock(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        if (IsCenter()) {
-            mCenterClock = this;
-        } else {
-            mRightClock = this;
-        }
-    }
-
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
+    public Clock(Context context, TextView v) {
+        mContext = context;
+        mClockView = v;
 
         if (!mAttached) {
             mAttached = true;
             IntentFilter filter = new IntentFilter();
-
             filter.addAction(Intent.ACTION_TIME_TICK);
             filter.addAction(Intent.ACTION_TIME_CHANGED);
             filter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
             filter.addAction(Intent.ACTION_CONFIGURATION_CHANGED);
             filter.addAction(Intent.ACTION_USER_SWITCHED);
 
-            getContext().registerReceiver(mIntentReceiver, filter, null, getHandler());
+            mContext.registerReceiver(mIntentReceiver, filter, null, new Handler());
         }
 
         // NOTE: It's safe to do these after registering the receiver since the receiver always runs
@@ -153,35 +117,15 @@ public class Clock extends TextView implements DemoMode {
         mCalendar = Calendar.getInstance(TimeZone.getDefault());
 
         // Make sure we update to the current time
-        //updateClock();
-        if (settingsObserver == null)
-        {
-            mHandler = new Handler();
-            settingsObserver = new SettingsObserver(mHandler);
+        if (settingsObserver == null) {
+            settingsObserver = new SettingsObserver(new Handler());
             settingsObserver.observe();
         } else {
-            updateClockVisibility();
             updateClock();
         }
     }
 
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        if (mAttached) {
-            getContext().unregisterReceiver(mIntentReceiver);
-            mAttached = false;
-        }
-
-        if (settingsObserver != null && !mRightClock.mAttached && !mCenterClock.mAttached)
-        {
-            settingsObserver.unobserve();
-            settingsObserver = null;
-            mHandler = null;
-        }
-    }
-
-    private final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
+    private static final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -192,7 +136,7 @@ public class Clock extends TextView implements DemoMode {
                     mClockFormat.setTimeZone(mCalendar.getTimeZone());
                 }
             } else if (action.equals(Intent.ACTION_CONFIGURATION_CHANGED)) {
-                final Locale newLocale = getResources().getConfiguration().locale;
+                final Locale newLocale = mContext.getResources().getConfiguration().locale;
                 if (! newLocale.equals(mLocale)) {
                     mLocale = newLocale;
                     mClockFormatString = ""; // force refresh
@@ -202,16 +146,9 @@ public class Clock extends TextView implements DemoMode {
         }
     };
 
-    final void updateClock() {
-        if (mDemoMode || mCalendar == null) return;
-        mCalendar.setTimeInMillis(System.currentTimeMillis());
-        setText(getSmallTime());
-    }
-
-    private final CharSequence getSmallTime() {
-        Context context = getContext();
-        boolean is24 = DateFormat.is24HourFormat(context);
-        LocaleData d = LocaleData.get(context.getResources().getConfiguration().locale);
+    private static final CharSequence getSmallTime() {
+        boolean is24 = DateFormat.is24HourFormat(mContext);
+        LocaleData d = LocaleData.get(mContext.getResources().getConfiguration().locale);
 
         final char MAGIC1 = '\uEF00';
         final char MAGIC2 = '\uEF01';
@@ -279,8 +216,7 @@ public class Clock extends TextView implements DemoMode {
         return result;
     }
 
-    private SimpleDateFormat updateFormatString(String format)
-    {
+    static SimpleDateFormat updateFormatString(String format) {
         SimpleDateFormat sdf = mClockFormat;
 
         if (!format.equals(mClockFormatString)) {
@@ -319,60 +255,29 @@ public class Clock extends TextView implements DemoMode {
 
     }
 
-    private void updateSettings() {
-        updateSettings(mContext);
+    static void updateClock() {
+        if (mDemoMode || mCalendar == null) return;
+        mCalendar.setTimeInMillis(System.currentTimeMillis());
+        mClockView.setText(getSmallTime());
     }
 
-    private static void updateSettings(Context mContext){
+    public static void updateClockView(TextView v) {
+        mClockView = v;
+        updateSettings();
+    }
+
+    static void updateSettings() {
         ContentResolver resolver = mContext.getContentResolver();
 
         mAmPmStyle = (Settings.System.getInt(resolver,
                 Settings.System.STATUS_BAR_AM_PM, 2));
-
-        mClockStyle = Settings.System.getInt(resolver, Settings.System.STATUS_BAR_CLOCK, STYLE_CLOCK_RIGHT);
-
-        if (mStatusBar != null) {
-            mStatusBar.setClockAndDateStatus(mClockAndDateWidth, mClockStyle, mShowClock);
-        }
 
         if (mAmPmStyle != AM_PM_STYLE) {
             AM_PM_STYLE = mAmPmStyle;
             mClockFormatString = "";
         }
 
-        if (mCenterClock != null) {
-            mCenterClock.applySettings();
-        }
-
-        if (mRightClock != null) {
-            mRightClock.applySettings();
-        }
-
-    }
-
-    private void applySettings() {
-        updateClockVisibility();
         updateClock();
-    }
-
-    private void CheckTag()
-    {
-        final Object o = getTag();
-        mIsCenter = (o != null && o.toString().equals("center"));
-        mTagChecked = true;
-    }
-
-    public boolean IsCenter()
-    {
-        if (!mTagChecked) {
-            CheckTag();
-        }
-        return mIsCenter;
-    }
-
-    public void forceUpdate()
-    {
-        updateSettings();
     }
 
     @Override
@@ -393,40 +298,7 @@ public class Clock extends TextView implements DemoMode {
                 mCalendar.set(Calendar.HOUR, hh);
                 mCalendar.set(Calendar.MINUTE, mm);
             }
-            setText(getSmallTime());
+            mClockView.setText(getSmallTime());
         }
-    }
-
-    public void setPhoneStatusBar(PhoneStatusBar statusBar) {
-        mStatusBar = statusBar;
-    }
-
-    @Override
-    protected void onSizeChanged(int xNew, int yNew, int xOld, int yOld){
-        super.onSizeChanged(xNew, yNew, xOld, yOld);
-        mClockAndDateWidth = xNew;
-        if (mStatusBar != null) {
-            mStatusBar.setClockAndDateStatus(mClockAndDateWidth, mClockStyle, mShowClock);
-        }
-    }
-
-    /*
-     * @hide
-     */
-    protected void updateClockVisibility() {
-        boolean c = IsCenter();
-        if (mShowClock && mClockStyle == STYLE_CLOCK_RIGHT && !c || mShowClock && mClockStyle == STYLE_CLOCK_CENTER && c)
-            setVisibility(View.VISIBLE);
-        else
-            setVisibility(View.GONE);
-    }
-
-    /*
-     * Updates this specific instance of clock's visibility for the current clock mode
-     * @hide
-     */
-    public void updateClockVisibility(boolean showClockFlag) {
-        mShowClock = showClockFlag;
-        updateClockVisibility();
     }
 }
