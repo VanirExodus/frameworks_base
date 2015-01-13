@@ -73,6 +73,24 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 >
+                
+            <com.android.keyguard.AlphaOptimizedLinearLayout
+                android:id="@+id/left_clock_layout"
+                android:gravity="left"
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:paddingEnd="6dip" >
+                <TextView
+                        android:textAppearance="@style/TextAppearance.StatusBar.Clock"
+                        android:gravity="center"
+                        android:id="@+id/left_clock"
+                        android:tag="left"
+                        android:layout_width="wrap_content"
+                        android:layout_height="fill_parent"
+                        android:singleLine="true" />
+            </com.android.keyguard.AlphaOptimizedLinearLayout>
+
                 <com.android.systemui.statusbar.StatusBarIconView android:id="@+id/moreIcon"
                     android:layout_width="@dimen/status_bar_icon_size"
                     android:layout_height="match_parent"
@@ -104,7 +122,7 @@
                 android:textColor="#ffffff"
                 android:textSize="@dimen/battery_level_text_size" />
 
-            <com.android.systemui.statusbar.policy.Clock
+            <TextView
                 android:id="@+id/clock"
                 android:textAppearance="@style/TextAppearance.StatusBar.Clock"
                 android:layout_width="wrap_content"
@@ -124,7 +142,7 @@
         android:layout_height="match_parent"
         >
 
-        <com.android.systemui.statusbar.policy.Clock
+        <TextView
             android:id="@+id/center_clock"
             android:textAppearance="@style/TextAppearance.StatusBar.Clock"
             android:gravity="center"
