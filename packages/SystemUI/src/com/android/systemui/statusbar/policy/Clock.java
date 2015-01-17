@@ -59,18 +59,17 @@ public class Clock implements DemoMode {
     private static final char MAGIC1 = '\uEF00';
     private static final char MAGIC2 = '\uEF01';
 
-    static Context mContext;
-    private static TextView mClockView;
-    private static Calendar mCalendar;
-    private static Locale mLocale;
-    private static String mClockFormatString;
-    private static SimpleDateFormat mClockFormat;
-    private static SettingsObserver settingsObserver;
+    Context mContext;
+    private TextView mClockView;
+    private Calendar mCalendar;
+    private Locale mLocale;
+    private String mClockFormatString;
+    private SimpleDateFormat mClockFormat;
+    private SettingsObserver settingsObserver;
 
-    private static int mAmPmStyle;
-    private static int AM_PM_STYLE = AM_PM_STYLE_GONE;
-    private static boolean mDemoMode;
-    private static boolean mAttached;
+    private int mAmPmStyle = AM_PM_STYLE_GONE;
+    private boolean mDemoMode;
+    private boolean mAttached;
 
     class SettingsObserver extends ContentObserver {
         SettingsObserver(Handler handler) {
@@ -125,7 +124,7 @@ public class Clock implements DemoMode {
         }
     }
 
-    private static final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -146,7 +145,7 @@ public class Clock implements DemoMode {
         }
     };
 
-    private static final CharSequence getSmallTime() {
+    private final CharSequence getSmallTime() {
         boolean is24 = DateFormat.is24HourFormat(mContext);
         LocaleData d = LocaleData.get(mContext.getResources().getConfiguration().locale);
 
@@ -216,12 +215,12 @@ public class Clock implements DemoMode {
         return result;
     }
 
-    static SimpleDateFormat updateFormatString(String format) {
+    SimpleDateFormat updateFormatString(String format) {
         SimpleDateFormat sdf = mClockFormat;
 
         if (!format.equals(mClockFormatString)) {
 
-            if (AM_PM_STYLE != AM_PM_STYLE_NORMAL) {
+            if (mAmPmStyle != AM_PM_STYLE_NORMAL) {
                 int a = -1;
                 boolean quoted = false;
                 for (int i = 0; i < format.length(); i++) {
@@ -255,27 +254,22 @@ public class Clock implements DemoMode {
 
     }
 
-    static void updateClock() {
+    void updateClock() {
         if (mDemoMode || mCalendar == null) return;
         mCalendar.setTimeInMillis(System.currentTimeMillis());
         mClockView.setText(getSmallTime());
     }
 
-    public static void updateClockView(TextView v) {
+    public void updateClockView(TextView v) {
         mClockView = v;
         updateSettings();
     }
 
-    static void updateSettings() {
+    void updateSettings() {
         ContentResolver resolver = mContext.getContentResolver();
-
         mAmPmStyle = (Settings.System.getInt(resolver,
                 Settings.System.STATUS_BAR_AM_PM, 2));
-
-        if (mAmPmStyle != AM_PM_STYLE) {
-            AM_PM_STYLE = mAmPmStyle;
-            mClockFormatString = "";
-        }
+		mClockFormatString = "";
 
         updateClock();
     }

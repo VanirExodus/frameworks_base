@@ -504,6 +504,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
 
     void updateClockView() {
         mClockView.setVisibility(View.GONE);
+
         switch (mClockLocation) {
             default:
             case 0:
@@ -523,6 +524,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 mClockView.setVisibility(View.VISIBLE);
                 break;
         }
+
         setClockAndDateStatus();
         mClockController.updateClockView(mClockView);
     }
