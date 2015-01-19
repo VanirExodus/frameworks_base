@@ -200,7 +200,7 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
         mConfig.launchedWithAltTab = launchIntent.getBooleanExtra(
                 AlternateRecentsComponent.EXTRA_TRIGGERED_FROM_ALT_TAB, false);
         boolean mShowSearchView = Settings.System.getInt(getContentResolver(),
-                    Settings.System.RECENTS_SHOW_HIDE_SEARCH_BAR, 0) != 1;
+                    Settings.System.RECENTS_SHOW_HIDE_SEARCH_BAR, 0) != 0;
 
         // Load all the tasks
         RecentsTaskLoader loader = RecentsTaskLoader.getInstance();
