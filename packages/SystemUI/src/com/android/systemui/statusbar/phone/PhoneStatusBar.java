@@ -374,7 +374,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private int mStatusBarHeaderHeight;
 
     private boolean mShowCarrierInPanel = false;
-    private boolean mShowLabel;
+    private boolean mShowLabel = true;
 
     // position
     int[] mPositionTmp = new int[2];
@@ -2558,9 +2558,17 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 if (mTicking) {
                     haltTicker();
                 }
+                if (mGreeting != null && !TextUtils.isEmpty(mGreeting)) {
+                    mExodusLabel.animate().cancel();
+                    mExodusLabel.setVisibility(View.GONE);
+                }
                 animateStatusBarHide(mNotificationIconArea, animate);
             } else {
                 if (mGreeting != null && !TextUtils.isEmpty(mGreeting) && mShowLabel) {
+                    if (mNotificationIconArea.getVisibility() != View.INVISIBLE) {
+                        mNotificationIconArea.setAlpha(0f);
+                        mNotificationIconArea.setVisibility(View.INVISIBLE);
+                    }
                     if (animate) {
                         mExodusLabel.setVisibility(View.VISIBLE);
                         mExodusLabel.animate().cancel();
@@ -2578,7 +2586,6 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                     } else {
                         labelAnimatorFadeOut(animate);
                     }
-                    mShowLabel = false;
                 } else {
                     animateStatusBarShow(mNotificationIconArea, animate);
                 }
@@ -2656,6 +2663,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 .withEndAction(new Runnable() {
             @Override
             public void run() {
+                mShowLabel = false;
                 mExodusLabel.setVisibility(View.GONE);
                 animateStatusBarShow(mNotificationIconArea, animate);
             }
