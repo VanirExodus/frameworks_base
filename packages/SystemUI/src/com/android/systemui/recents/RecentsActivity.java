@@ -183,9 +183,26 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
         }
     });
 
+    /**
+     * Enable/disable recents search widget.
+     */
+    private boolean isRecentsSearchbarEnabled() {
+        boolean recentsSearchbarEnabled = Settings.System.getInt(
+            getContentResolver(), Settings.System.RECENTS_SHOW_HIDE_SEARCH_BAR, 1) == 1;
+
+        // Update search bar space height
+        Resources res = getResources();
+        if (!recentsSearchbarEnabled) {
+            RecentsConfiguration.searchBarSpaceHeightPx = 0;
+        } else {
+            RecentsConfiguration.searchBarSpaceHeightPx =
+                res.getDimensionPixelSize(R.dimen.recents_search_bar_space_height);
+        }
+        return recentsSearchbarEnabled;
+    }
+
     /** Updates the set of recent tasks */
     void updateRecentsTasks(Intent launchIntent) {
-        Resources reso = getResources();
         // Update the configuration based on the launch intent
         boolean fromSearchHome = launchIntent.getBooleanExtra(
                 AlternateRecentsComponent.EXTRA_FROM_SEARCH_HOME, false);
@@ -199,8 +216,6 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
                 AlternateRecentsComponent.EXTRA_FROM_TASK_ID, -1);
         mConfig.launchedWithAltTab = launchIntent.getBooleanExtra(
                 AlternateRecentsComponent.EXTRA_TRIGGERED_FROM_ALT_TAB, false);
-        boolean mShowSearchView = Settings.System.getInt(getContentResolver(),
-                    Settings.System.RECENTS_SHOW_HIDE_SEARCH_BAR, 0) != 1;
 
         // Load all the tasks
         RecentsTaskLoader loader = RecentsTaskLoader.getInstance();
@@ -256,23 +271,10 @@ public class RecentsActivity extends Activity implements RecentsView.RecentsView
             }
             findViewById(R.id.floating_action_button).setVisibility(View.VISIBLE);
             if (mRecentsView.hasSearchBar()) {
-                if (mShowSearchView) {
-                    mRecentsView.setSearchBarVisibility(View.VISIBLE);
-                } else {
-                    mRecentsView.setSearchBarVisibility(View.GONE);
-                }
+                mRecentsView.setSearchBarVisibility(isRecentsSearchbarEnabled() ? View.VISIBLE : View.GONE);
             } else {
-                if (mShowSearchView) {
-                    addSearchBarAppWidgetView();
-                }
+                addSearchBarAppWidgetView();
             }
-        }
-
-        // Update search bar space height
-        if (!mShowSearchView) {
-            RecentsConfiguration.searchBarSpaceHeightPx = 0;
-        } else {
-            RecentsConfiguration.searchBarSpaceHeightPx = reso.getDimensionPixelSize(R.dimen.recents_search_bar_space_height);
         }
 
         // Animate the SystemUI scrims into view
