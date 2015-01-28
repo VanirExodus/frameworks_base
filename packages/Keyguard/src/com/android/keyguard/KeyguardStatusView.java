@@ -19,9 +19,12 @@ package com.android.keyguard;
 import android.app.AlarmManager;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.provider.AlarmClock;
+import android.graphics.drawable.Drawable;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.util.AttributeSet;
@@ -30,23 +33,34 @@ import android.util.Slog;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.GridLayout;
+import android.widget.ImageView;
 import android.widget.TextClock;
 import android.widget.TextView;
 
+import com.android.internal.util.cm.WeatherController;
+import com.android.internal.util.cm.WeatherControllerImpl;
 import com.android.internal.widget.LockPatternUtils;
 
 import java.util.Locale;
 
-public class KeyguardStatusView extends GridLayout {
+public class KeyguardStatusView extends GridLayout implements
+        WeatherController.Callback {
     private static final boolean DEBUG = KeyguardConstants.DEBUG;
     private static final String TAG = "KeyguardStatusView";
 
     private LockPatternUtils mLockPatternUtils;
 
+    private ImageView mWeatherIcon;
     private TextView mAlarmStatusView;
     private TextClock mDateView;
     private TextClock mClockView;
     private TextView mOwnerInfo;
+    private View mWeatherView;
+    private TextView mTemperatureText;
+    private TextView mWeatherCity;
+    private boolean mShowWeather;
+
+    private WeatherController mWeatherController;
 
     private KeyguardUpdateMonitorCallback mInfoCallback = new KeyguardUpdateMonitorCallback() {
 
@@ -91,6 +105,7 @@ public class KeyguardStatusView extends GridLayout {
 
     public KeyguardStatusView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        mWeatherController = new WeatherControllerImpl(mContext);
     }
 
     private void setEnableMarquee(boolean enabled) {
@@ -106,6 +121,10 @@ public class KeyguardStatusView extends GridLayout {
         mDateView = (TextClock) findViewById(R.id.date_view);
         mClockView = (TextClock) findViewById(R.id.clock_view);
         mOwnerInfo = (TextView) findViewById(R.id.owner_info);
+        mWeatherView = findViewById(R.id.keyguard_weather_view);
+        mWeatherIcon = (ImageView) findViewById(R.id.weather_image);
+        mWeatherCity = (TextView) findViewById(R.id.city);
+        mTemperatureText = (TextView) findViewById(R.id.temperature);
         mLockPatternUtils = new LockPatternUtils(getContext());
         final boolean screenOn = KeyguardUpdateMonitor.getInstance(mContext).isScreenOn();
         setEnableMarquee(screenOn);
@@ -142,6 +161,7 @@ public class KeyguardStatusView extends GridLayout {
 
         refreshTime();
         refreshAlarmStatus(nextAlarm);
+        updateWeatherSettings();
     }
 
     void refreshAlarmStatus(AlarmManager.AlarmClockInfo nextAlarm) {
@@ -180,12 +200,15 @@ public class KeyguardStatusView extends GridLayout {
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
         KeyguardUpdateMonitor.getInstance(mContext).registerCallback(mInfoCallback);
+        updateWeatherSettings();
+        mWeatherController.addCallback(this);
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         KeyguardUpdateMonitor.getInstance(mContext).removeCallback(mInfoCallback);
+        mWeatherController.removeCallback(this);
     }
 
     public int getAppWidgetId() {
@@ -205,6 +228,34 @@ public class KeyguardStatusView extends GridLayout {
     @Override
     public boolean hasOverlappingRendering() {
         return false;
+    }
+
+    @Override
+    public void onWeatherChanged(WeatherController.WeatherInfo info) {
+        updateWeatherSettings();
+        if (info.temp == null || info.condition == null) {
+            mTemperatureText.setText(null);
+            mWeatherCity.setText("--");
+            mWeatherIcon.setImageDrawable(null);
+            mWeatherView.setVisibility(View.GONE);
+        } else {
+            mWeatherView.setVisibility(mShowWeather ? View.VISIBLE : View.GONE);
+            mTemperatureText.setText(info.temp);
+            mWeatherCity.setText(info.city);
+            mWeatherIcon.setImageDrawable(info.conditionDrawable);
+        }
+    }
+
+    private void updateWeatherSettings() {
+        final ContentResolver resolver = getContext().getContentResolver();
+
+        mShowWeather = Settings.System.getInt(resolver,
+                Settings.System.LOCK_SCREEN_SHOW_WEATHER, 0) == 1;
+        boolean showLocation = Settings.System.getInt(resolver,
+                    Settings.System.LOCK_SCREEN_SHOW_WEATHER_LOCATION, 1) == 1;
+
+        mWeatherView.setVisibility(mShowWeather ? View.VISIBLE : View.GONE);
+        mWeatherCity.setVisibility(showLocation ? View.VISIBLE : View.GONE);
     }
 
     // DateFormat.getBestDateTimePattern is extremely expensive, and refresh is called often.
