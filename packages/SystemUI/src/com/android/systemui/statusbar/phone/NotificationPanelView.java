@@ -193,15 +193,6 @@ public class NotificationPanelView extends PanelView implements
         super(context, attrs);
         mSettingsObserver = new SettingsObserver(mHandler);
         mLockPatternUtils = new LockPatternUtils(mContext);
-        mDoubleTapGesture = new GestureDetector(mContext, new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onDoubleTap(MotionEvent e) {
-                PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
-                if(pm != null)
-                    pm.goToSleep(e.getEventTime());
-                return true;
-            }
-        });
     }
 
     public void setStatusBar(PhoneStatusBar bar) {
@@ -1964,6 +1955,22 @@ public class NotificationPanelView extends PanelView implements
             mStatusBarLockedOnSecureKeyguard = Settings.Secure.getIntForUser(
                     resolver, Settings.Secure.STATUS_BAR_LOCKED_ON_SECURE_KEYGUARD, 0,
                     UserHandle.USER_CURRENT) == 1;
+            
+            if (mDoubleTapToSleepEnabled) {
+				mDoubleTapGesture = new GestureDetector(mContext, new GestureDetector.SimpleOnGestureListener() {
+					@Override
+					public boolean onDoubleTap(MotionEvent e) {
+						PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
+						if(pm != null)
+							pm.goToSleep(e.getEventTime());
+						return true;
+					}
+				});
+			} else {
+				if (mDoubleTapGesture != null) {
+					mDoubleTapGesture = null;
+				}
+			}
         }
     }
 }
