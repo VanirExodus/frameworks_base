@@ -585,7 +585,6 @@ public class NavigationBarView extends LinearLayout {
         if (mButtonLayouts == 1) {
             if (mLegacyMenu) {
                 if (mImeLayout) {
-                    // show hard-coded switchers here when written
                     if (getButtonView(ACTION_IME) != null)
                         getButtonView(ACTION_IME).setVisibility(showingIME ? View.VISIBLE : View.INVISIBLE);
                     if (getButtonView(ACTION_IME_LAYOUT) != null) getButtonView(ACTION_IME_LAYOUT)
@@ -595,6 +594,13 @@ public class NavigationBarView extends LinearLayout {
                         .setVisibility(mShowMenu ? View.VISIBLE : View.INVISIBLE);
                 }
             }
+        } else {
+			if (!showingIME) {
+				if ((LayoutChangerButtonView) getButtonView(ACTION_LAYOUT_LEFT) != null)
+						((LayoutChangerButtonView) getButtonView(ACTION_LAYOUT_LEFT)).setDrawingAlpha(0.20f);
+				if ((LayoutChangerButtonView) getButtonView(ACTION_LAYOUT_RIGHT) != null)
+						((LayoutChangerButtonView) getButtonView(ACTION_LAYOUT_RIGHT)).setDrawingAlpha(0.20f);
+			}
         }
     }
 

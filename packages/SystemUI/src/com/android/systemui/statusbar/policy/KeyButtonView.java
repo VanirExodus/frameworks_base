@@ -76,6 +76,7 @@ public class KeyButtonView extends ImageView {
     private static final boolean DEBUG = false;
 
     public static final float DEFAULT_QUIESCENT_ALPHA = 1f;
+    public static final float DEFAULT_LAYOUT_CHANGER_ALPHA = 0.20f;
     private static final int DPAD_TIMEOUT_INTERVAL = 500;
     private static final int DPAD_REPEAT_INTERVAL = 75;
 
@@ -84,20 +85,22 @@ public class KeyButtonView extends ImageView {
 
     private long mDownTime;
     private long mUpTime;
-    private int mTouchSlop;
+    int mTouchSlop;
+
     private float mDrawingAlpha = 1f;
     private float mQuiescentAlpha = DEFAULT_QUIESCENT_ALPHA;
     private Animator mAnimateToQuiescent = new ObjectAnimator();
     boolean mShouldClick = true;
 
-    private static PowerManager mPm;
     private static AudioManager mAudioManager;
-    private KeyButtonInfo mActions;
-    private KeyButtonRipple mRipple;
+    static PowerManager mPm;
 
+    private KeyButtonRipple mRipple;
+    KeyButtonInfo mActions;
+
+    public boolean mHasBlankSingleAction = false, mHasDoubleAction, mHasLongAction;
     boolean mIsDPadAction = false;
     boolean mHasSingleAction = false;
-    boolean mHasBlankSingleAction = false, mHasDoubleAction, mHasLongAction;
 
     public static PowerManager getPowerManagerService(Context context) {
         if (mPm == null) mPm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -164,7 +167,7 @@ public class KeyButtonView extends ImageView {
 
             if (DEBUG) Log.d(TAG, "Adding a navbar button in landscape or portrait " + mActions.singleAction);
         } else {
-            Log.e(TAG, "hmmm. mActions was null...";
+            Log.e(TAG, "hmmm. mActions was null...");
         }
     }
 
@@ -192,6 +195,10 @@ public class KeyButtonView extends ImageView {
     }
 
     public void setQuiescentAlpha(float alpha, boolean animate) {
+		if (mActions.singleAction == ACTION_LAYOUT_RIGHT
+		        || mActions.singleAction == ACTION_LAYOUT_LEFT) {
+			return;
+		}
         mAnimateToQuiescent.cancel();
         alpha = Math.min(Math.max(alpha, 0), 1);
         if (alpha == mQuiescentAlpha && alpha == mDrawingAlpha) return;
