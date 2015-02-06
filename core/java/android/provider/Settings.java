@@ -2959,6 +2959,12 @@ public final class Settings {
         public static final String LOCKSCREEN_DISABLED = "lockscreen.disabled";
 
         /**
+         * Set the default orientation to landscape
+         * @hide
+         */
+        public static final String DEFAULT_LANDSCAPE_ORIENTATION = "default_landscape_orientation";
+
+        /**
          * Whether power menu expanded desktop is enabled
          * @hide
          */
