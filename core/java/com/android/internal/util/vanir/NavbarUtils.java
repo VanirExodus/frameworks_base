@@ -16,6 +16,8 @@
 
 package com.android.internal.util.vanir;
 
+import static com.android.internal.util.vanir.NavbarConstants.*;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -26,16 +28,18 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.android.internal.util.vanir.NavbarConstants;
+import com.android.internal.util.vanir.NavbarConstants.NavbarConstant;
+
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.ArrayList;
 
-import com.android.internal.util.vanir.NavbarConstants;
-import static com.android.internal.util.vanir.NavbarConstants.*;
-import com.android.internal.util.vanir.NavbarConstants.NavbarConstant;
-
 public class NavbarUtils {
     private static final String TAG = NavbarUtils.class.getSimpleName();
+
+    // Debugging for the navbar can be toggled here...
+    public static final boolean DEBUG = false;
 
     // These items are excluded from settings and cannot be set as targets
     private static final String[] EXCLUDED_FROM_NAVBAR = {

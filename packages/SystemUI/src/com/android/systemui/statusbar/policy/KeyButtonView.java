@@ -73,7 +73,7 @@ import static android.view.accessibility.AccessibilityNodeInfo.ACTION_LONG_CLICK
 
 public class KeyButtonView extends ImageView {
     private static final String TAG = "StatusBar.KeyButtonView";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = NavbarUtils.DEBUG;
 
     public static final float DEFAULT_QUIESCENT_ALPHA = 1f;
     public static final float DEFAULT_LAYOUT_CHANGER_ALPHA = 0.20f;

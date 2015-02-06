@@ -16,12 +16,12 @@
 
 package com.android.internal.util.vanir;
 
-import android.text.TextUtils;
-
 import static com.android.internal.util.vanir.NavbarConstants.*;
 
+import android.text.TextUtils;
+
 public class KeyButtonInfo {
-    public static final String TAG = "keybuttoninfo";
+    private static final String TAG = "keybuttoninfo";
 
     public String singleAction, doubleTapAction, longPressAction, iconUri;
 

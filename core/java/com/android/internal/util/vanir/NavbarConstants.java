@@ -26,6 +26,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class NavbarConstants {
+	public static final String ASSIST_ICON_METADATA_NAME = "com.android.systemui.action_assist_icon";
+
     public static final int LAYOUT_IME = -2;
     public static final int DEFAULT_LAYOUT = -3;
 
@@ -221,8 +223,6 @@ public class NavbarConstants {
     public static NavbarConstant fromString(String actionstring) {
         return NavbarConstant.fromAction(actionstring);
     }
-
-    public static final String ASSIST_ICON_METADATA_NAME = "com.android.systemui.action_assist_icon";
 
     public static String defaultNavbarLayout(Context context) {
         Resources res = context.getResources();
