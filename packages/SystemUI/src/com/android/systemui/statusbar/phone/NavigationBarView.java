@@ -652,7 +652,7 @@ public class NavigationBarView extends LinearLayout {
                 if (getButtonView(ACTION_LAYOUT_RIGHT) != null) {
                     ((LayoutChangerButtonView) getButtonView(ACTION_LAYOUT_RIGHT)).setMenuAction(
                             shouldShow, getResources().getConfiguration().orientation, mTablet);
-                } else if (getButtonView(ACTION_MENU) != null) {
+                } else if ((LayoutChangerButtonView) getButtonView(ACTION_MENU) != null) {
                     ((LayoutChangerButtonView) getButtonView(ACTION_MENU)).setMenuAction(
                             shouldShow, getResources().getConfiguration().orientation, mTablet);
                 }
