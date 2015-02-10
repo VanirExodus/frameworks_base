@@ -105,9 +105,9 @@ public class NavigationBarView extends LinearLayout {
     private DelegateViewHelper mDelegateHelper;
     private DeadZone mDeadZone;
     private final NavigationBarTransitions mBarTransitions;
-    private KeyButtonView button;
-    private LayoutChangerButtonView changer;
-    private KeyButtonInfo info;
+    private KeyButtonView mButton;
+    private LayoutChangerButtonView mChanger;
+    private KeyButtonInfo mInfo;
 
     // workaround for LayoutTransitions leaving the nav buttons in a weird state (bug 5549288)
     final static boolean WORKAROUND_INVALID_LAYOUT = true;
@@ -352,6 +352,14 @@ public class NavigationBarView extends LinearLayout {
         return mCurrentView.findViewWithTag(constant);
     }
 
+    public View attachedToLayoutButtonView(String constant) {
+        final View child = mCurrentView.findViewWithTag(constant);
+        if (child instanceof LayoutChangerButtonView) {
+            return child;
+        }
+        return null;
+    }
+
     public void updateResources(Resources res) {
         mThemedResources = res;
         mBarTransitions.updateResources(res);
@@ -443,17 +451,20 @@ public class NavigationBarView extends LinearLayout {
                 getButtonView(ACTION_IME_LAYOUT).setVisibility(showingIME ? View.VISIBLE : View.INVISIBLE);
             }
             if (mButtonLayouts > 1) {
+				final int orientation = getResources().getConfiguration().orientation;
+				// left side
                 if (getButtonView(ACTION_LAYOUT_LEFT) != null) {
-                    setLayoutChangerType(getButtonView(ACTION_LAYOUT_LEFT), CHANGER_LEFT_SIDE);
+                    setLayoutChangerType(getButtonView(ACTION_LAYOUT_LEFT), CHANGER_LEFT_SIDE, orientation);
                 } else if (getButtonView(ACTION_IME_LAYOUT) != null) {
-                    setLayoutChangerType(getButtonView(ACTION_IME_LAYOUT), CHANGER_LEFT_SIDE);
+                    setLayoutChangerType(getButtonView(ACTION_IME_LAYOUT), CHANGER_LEFT_SIDE, orientation);
                 }
+                // right side
                 if (getButtonView(ACTION_LAYOUT_RIGHT) != null) {
-                    setLayoutChangerType(getButtonView(ACTION_LAYOUT_RIGHT), CHANGER_RIGHT_SIDE);
+                    setLayoutChangerType(getButtonView(ACTION_LAYOUT_RIGHT), CHANGER_RIGHT_SIDE, orientation);
                 } else if (getButtonView(ACTION_IME) != null) {
-                    setLayoutChangerType(getButtonView(ACTION_IME), CHANGER_RIGHT_SIDE);
+                    setLayoutChangerType(getButtonView(ACTION_IME), CHANGER_RIGHT_SIDE, orientation);
                 } else if (getButtonView(ACTION_MENU) != null) {
-                    setLayoutChangerType(getButtonView(ACTION_MENU), CHANGER_RIGHT_SIDE);
+                    setLayoutChangerType(getButtonView(ACTION_MENU), CHANGER_RIGHT_SIDE, orientation);
                 }
             }
             if (!showingIME) {
@@ -476,15 +487,15 @@ public class NavigationBarView extends LinearLayout {
         setDisabledFlags(mDisabledFlags, true);
     }
 
-    private void setLayoutChangerType(View v, int side) {
+    private void setLayoutChangerType(View v, int side, int orientation) {
         switch (side) {
             case CHANGER_LEFT_SIDE:
                ((LayoutChangerButtonView) v).setImeLayout(
-                        showingIME, getResources().getConfiguration().orientation, mTablet);
+                        showingIME, orientation, mTablet);
                 break;
             case CHANGER_RIGHT_SIDE:
                ((LayoutChangerButtonView) v).setImeSwitch(
-                        showingIME, getResources().getConfiguration().orientation, mTablet);
+                        showingIME, orientation, mTablet);
                 break;
         }
     }
@@ -649,10 +660,10 @@ public class NavigationBarView extends LinearLayout {
 
         if (mLegacyMenu && !showingIME) {
             if (mButtonLayouts != 1) {
-                if (getButtonView(ACTION_LAYOUT_RIGHT) != null) {
+                if (attachedToLayoutButtonView(ACTION_LAYOUT_RIGHT) != null) {
                     ((LayoutChangerButtonView) getButtonView(ACTION_LAYOUT_RIGHT)).setMenuAction(
                             shouldShow, getResources().getConfiguration().orientation, mTablet);
-                } else if (getButtonView(ACTION_MENU) != null) {
+                } else if (attachedToLayoutButtonView(ACTION_MENU) != null) {
                     ((LayoutChangerButtonView) getButtonView(ACTION_MENU)).setMenuAction(
                             shouldShow, getResources().getConfiguration().orientation, mTablet);
                 }
@@ -779,45 +790,45 @@ public class NavigationBarView extends LinearLayout {
             // multiple layouts: left-side layout changer
             if (mButtonLayouts > 1) {
                 if (!mImeLayout || (mImeLayout && !showingIME)) {
-                    info = new KeyButtonInfo(ACTION_LAYOUT_LEFT);
-                    changer = new LayoutChangerButtonView(mContext, null);
-                    changer.setButtonActions(info);
+                    mInfo = new KeyButtonInfo(ACTION_LAYOUT_LEFT);
+                    mChanger = new LayoutChangerButtonView(mContext, null);
+                    mChanger.setButtonActions(mInfo);
                     if (mTablet) {
-                        changer.setImageResource(R.drawable.ic_sysbar_layout_left);
+                        mChanger.setImageResource(R.drawable.ic_sysbar_layout_left);
                     } else {
-                        changer.setImageResource(landscape
+                        mChanger.setImageResource(landscape
                                 ? R.drawable.ic_sysbar_layout_left_landscape
                                 : R.drawable.ic_sysbar_layout_left);
                     }
-                    changer.setLayoutParams(getLayoutParams(landscape, mLayoutChangerWidth, 0f));
+                    mChanger.setLayoutParams(getLayoutParams(landscape, mLayoutChangerWidth, 0f));
 
-                    addButton(navButtons, changer, landscape);
-                    addLightsOutButton(lightsOut, changer, landscape, false);
+                    addButton(navButtons, mChanger, landscape);
+                    addLightsOutButton(lightsOut, mChanger, landscape, false);
                 }
                 if (mImeLayout && showingIME) {
-                    info = new KeyButtonInfo(ACTION_IME_LAYOUT);
-                    changer = new LayoutChangerButtonView(mContext, null);
-                    changer.setButtonActions(info);
-                    changer.setImageResource(R.drawable.ic_sysbar_ime_arrows);
-                    changer.setLayoutParams(getLayoutParams(landscape, mLayoutChangerWidth, 0f));
+                    mInfo = new KeyButtonInfo(ACTION_IME_LAYOUT);
+                    mChanger = new LayoutChangerButtonView(mContext, null);
+                    mChanger.setButtonActions(mInfo);
+                    mChanger.setImageResource(R.drawable.ic_sysbar_ime_arrows);
+                    mChanger.setLayoutParams(getLayoutParams(landscape, mLayoutChangerWidth, 0f));
 
-                    addButton(navButtons, changer, landscape);
-                    addLightsOutButton(lightsOut, changer, landscape, false);
+                    addButton(navButtons, mChanger, landscape);
+                    addLightsOutButton(lightsOut, mChanger, landscape, false);
                 }
             }
 
             // single layout: AOSP key spacing on left side
             if (mLegacyMenu && mButtonLayouts == 1) {
                     if (mImeLayout) {
-                    info = new KeyButtonInfo(ACTION_IME_LAYOUT);
-                    changer = new LayoutChangerButtonView(mContext, null);
-                    changer.setButtonActions(info);
-                    changer.setImageResource(R.drawable.ic_sysbar_ime_arrows);
-                    changer.setLayoutParams(getLayoutParams(landscape, mTablet ? mMenuButtonWidth : separatorSize, 0f));
+                    mInfo = new KeyButtonInfo(ACTION_IME_LAYOUT);
+                    mChanger = new LayoutChangerButtonView(mContext, null);
+                    mChanger.setButtonActions(mInfo);
+                    mChanger.setImageResource(R.drawable.ic_sysbar_ime_arrows);
+                    mChanger.setLayoutParams(getLayoutParams(landscape, mTablet ? mMenuButtonWidth : separatorSize, 0f));
 
-                    addButton(navButtons, changer, landscape);
-                    addLightsOutButton(lightsOut, changer, landscape, false);
-                    changer.setVisibility(showingIME ? View.VISIBLE : View.INVISIBLE);
+                    addButton(navButtons, mChanger, landscape);
+                    addLightsOutButton(lightsOut, mChanger, landscape, false);
+                    mChanger.setVisibility(showingIME ? View.VISIBLE : View.INVISIBLE);
                 } else {
                     addSeparator(navButtons, landscape, mTablet ? (int) mMenuButtonWidth : separatorSize, 0f);
                     addSeparator(lightsOut, landscape, mTablet ? (int) mMenuButtonWidth : separatorSize, 0f);
@@ -830,15 +841,15 @@ public class NavigationBarView extends LinearLayout {
 
             // add the custom buttons
             for (int j = 0; j < length; j++) {
-                info = buttonsArray.get(j);
-                button = new KeyButtonView(mContext, null);
-                button.setButtonActions(info);
-                button.setLongPressTimeout(mLongPressTimeout);
-                button.setLayoutParams(getLayoutParams(landscape, mButtonWidth, mTablet ? 1f : 0.5f));
+                mInfo = buttonsArray.get(j);
+                mButton = new KeyButtonView(mContext, null);
+                mButton.setButtonActions(mInfo);
+                mButton.setLongPressTimeout(mLongPressTimeout);
+                mButton.setLayoutParams(getLayoutParams(landscape, mButtonWidth, mTablet ? 1f : 0.5f));
 
-                if (!button.mHasBlankSingleAction) {
-                    addButton(navButtons, button, landscape);
-                    addLightsOutButton(lightsOut, button, landscape, false);
+                if (!mButton.mHasBlankSingleAction) {
+                    addButton(navButtons, mButton, landscape);
+                    addLightsOutButton(lightsOut, mButton, landscape, false);
                 } else {
                     addSeparator(navButtons, landscape, (int) mButtonWidth, mTablet ? 1f : 0.5f);
                     addSeparator(lightsOut, landscape, (int) mButtonWidth, mTablet ? 1f : 0.5f);
@@ -847,62 +858,62 @@ public class NavigationBarView extends LinearLayout {
 
             // single layout: legacy menu button/AOSP spacing on right side
             if (mLegacyMenu && mButtonLayouts == 1) {
-                info = new KeyButtonInfo(mImeLayout
+                mInfo = new KeyButtonInfo(mImeLayout
                                     ? mShowMenu
                                         ? ACTION_MENU
                                         : ACTION_IME
                                     : ACTION_MENU);
-                changer = new LayoutChangerButtonView(mContext, null);
-                changer.setButtonActions(info);
-                changer.setImageResource(mImeLayout
+                mChanger = new LayoutChangerButtonView(mContext, null);
+                mChanger.setButtonActions(mInfo);
+                mChanger.setImageResource(mImeLayout
                                    ? mShowMenu
                                         ? R.drawable.ic_sysbar_menu
                                         : R.drawable.ic_ime_switcher_default
                                     : R.drawable.ic_sysbar_menu);
-                changer.setLayoutParams(getLayoutParams(landscape, mTablet ? mMenuButtonWidth : separatorSize, 0f));
-                changer.setVisibility(mShowMenu || (mImeLayout && showingIME) ? View.VISIBLE : View.INVISIBLE);
+                mChanger.setLayoutParams(getLayoutParams(landscape, mTablet ? mMenuButtonWidth : separatorSize, 0f));
+                mChanger.setVisibility(mShowMenu || (mImeLayout && showingIME) ? View.VISIBLE : View.INVISIBLE);
 
                 if (mTablet) {
                     addSeparator(navButtons, landscape, 0,  stockThreeButtonLayout ? 1f : 0.5f);
                     addSeparator(lightsOut, landscape, 0,  stockThreeButtonLayout ? 1f : 0.5f);
                 }
-                addButton(navButtons, changer, landscape);
-                addLightsOutButton(lightsOut, changer, landscape, true);
+                addButton(navButtons, mChanger, landscape);
+                addLightsOutButton(lightsOut, mChanger, landscape, true);
             }
 
             // multiple layouts: right-side layout changer button/ime switcher/legacy menu
             if (mButtonLayouts > 1) {
                 if (!mImeLayout || (mImeLayout && !showingIME)) {
-                    info = new KeyButtonInfo(mShowMenu
+                    mInfo = new KeyButtonInfo(mShowMenu
                             ? ACTION_MENU
                             : ACTION_LAYOUT_RIGHT);
-                    changer = new LayoutChangerButtonView(mContext, null);
-                    changer.setButtonActions(info);
+                    mChanger = new LayoutChangerButtonView(mContext, null);
+                    mChanger.setButtonActions(mInfo);
                     if (mTablet) {
-                        changer.setImageResource(mShowMenu
+                        mChanger.setImageResource(mShowMenu
                                 ? R.drawable.ic_sysbar_menu
                                 : R.drawable.ic_sysbar_layout_right);
                     } else {
-                         changer.setImageResource(mShowMenu
+                         mChanger.setImageResource(mShowMenu
                                 ? R.drawable.ic_sysbar_menu
                                 : landscape
                                         ? R.drawable.ic_sysbar_layout_right_landscape
                                         : R.drawable.ic_sysbar_layout_right);
                     }
-                    changer.setLayoutParams(getLayoutParams(landscape, mLayoutChangerWidth, 0f));
+                    mChanger.setLayoutParams(getLayoutParams(landscape, mLayoutChangerWidth, 0f));
 
-                    addButton(navButtons, changer, landscape);
-                    addLightsOutButton(lightsOut, changer, landscape, false);
+                    addButton(navButtons, mChanger, landscape);
+                    addLightsOutButton(lightsOut, mChanger, landscape, false);
                 }
                 if (mImeLayout && showingIME) {
-                    info = new KeyButtonInfo(ACTION_IME);
-                    changer = new LayoutChangerButtonView(mContext, null);
-                    changer.setButtonActions(info);
-                    changer.setImageResource(R.drawable.ic_ime_switcher_default);
-                    changer.setLayoutParams(getLayoutParams(landscape, mLayoutChangerWidth, 0f));
+                    mInfo = new KeyButtonInfo(ACTION_IME);
+                    mChanger = new LayoutChangerButtonView(mContext, null);
+                    mChanger.setButtonActions(mInfo);
+                    mChanger.setImageResource(R.drawable.ic_ime_switcher_default);
+                    mChanger.setLayoutParams(getLayoutParams(landscape, mLayoutChangerWidth, 0f));
 
-                    addButton(navButtons, changer, landscape);
-                    addLightsOutButton(lightsOut, changer, landscape, false);
+                    addButton(navButtons, mChanger, landscape);
+                    addLightsOutButton(lightsOut, mChanger, landscape, false);
                 }
             }
         }
