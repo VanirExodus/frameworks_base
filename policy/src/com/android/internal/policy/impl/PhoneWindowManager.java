@@ -6993,10 +6993,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private boolean isImmersiveMode(int vis) {
         final int flags = View.SYSTEM_UI_FLAG_IMMERSIVE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-        return mNavigationBar != null
-                && (vis & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0
-                && (vis & flags) != 0
-                && canHideNavigationBar();
+        return ((vis & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0 || (vis & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0)
+                && (vis & flags) != 0;
     }
 
     /**
