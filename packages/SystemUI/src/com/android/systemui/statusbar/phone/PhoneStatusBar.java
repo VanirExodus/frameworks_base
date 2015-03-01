@@ -4026,6 +4026,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     void updateResources() {
         final Context context = mContext;
         final Resources res = context.getResources();
+        ContentResolver resolver = mContext.getContentResolver();
 
         // detect theme change.
         ThemeConfig newTheme = res.getConfiguration().themeConfig;
@@ -4033,6 +4034,14 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                 (mCurrentTheme == null || !mCurrentTheme.equals(newTheme))) {
             mCurrentTheme = (ThemeConfig)newTheme.clone();
             recreateStatusBar();
+            
+        // detect greeting state when theme change.
+		mGreeting = Settings.System.getStringForUser(
+				resolver, Settings.System.STATUS_BAR_GREETING,
+					UserHandle.USER_CURRENT);
+			if (mGreeting != null && !TextUtils.isEmpty(mGreeting)) {
+					mExodusLabel.setText(mGreeting);
+			}
         } else {
             loadDimens();
         }
