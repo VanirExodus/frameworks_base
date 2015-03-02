@@ -957,6 +957,7 @@ public abstract class BaseStatusBar extends SystemUI implements
 
     public void notifyLayoutChange(int direction) { }
     public void setHomeActionListener() { }
+    public void setCurrentLayout(int layout) { }
 
     @Override
     public void showRecentApps(boolean triggeredFromAltTab) {
