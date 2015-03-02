@@ -303,9 +303,18 @@ public class ActivityManager {
 
     Point mAppTaskThumbnailSize;
 
+    // Memoize these to reduce SystemProperty lookups
+    private static boolean mIsLowRamDeviceStatic;
+    private static boolean mAvoidGfxAccel;
+    private static boolean mIsForcedHighEndGfx;
+
     /*package*/ ActivityManager(Context context, Handler handler) {
         mContext = context;
         mHandler = handler;
+
+        mIsLowRamDeviceStatic = isLowRamDeviceStatic();
+        mAvoidGfxAccel = !Resources.getSystem().getBoolean(com.android.internal.R.bool.config_avoidGfxAccel);
+        mIsForcedHighEndGfx = isForcedHighEndGfx();
     }
 
     /**
@@ -477,9 +486,9 @@ public class ActivityManager {
      * @hide
      */
     static public boolean isHighEndGfx() {
-        return (!isLowRamDeviceStatic() &&
-                !Resources.getSystem().getBoolean(com.android.internal.R.bool.config_avoidGfxAccel))
-                || isForcedHighEndGfx();
+        return (mIsLowRamDeviceStatic &&
+                !mAvoidGfxAccel
+                || mIsForcedHighEndGfx);
     }
 
     /**
