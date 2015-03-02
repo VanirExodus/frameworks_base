@@ -501,8 +501,19 @@ public class NavigationBarView extends LinearLayout {
         }
     }
 
+    public int getCurrentLayout() {
+        return mCurrentLayout;
+    }
+
+    public void notifyLayoutReset(int layout) {
+        mCurrentLayout = layout;
+        if (mCurrentLayout >= mButtonLayouts) mCurrentLayout = mButtonLayouts - 1;
+        setNextLayout(mCurrentLayout);
+    }
+
     public void notifyLayoutChange(int direction) {
         mNextLayoutIndex = direction;
+
         if (direction == NavbarConstants.LAYOUT_IME) {
             if (mDisplayingLayoutIndex == NavbarConstants.LAYOUT_IME) {
                 setNextLayout(mCurrentLayout);
@@ -528,6 +539,7 @@ public class NavigationBarView extends LinearLayout {
         public void run() {
             mDisplayingLayoutIndex = mNextLayoutIndex;
             setupNavigationButtons(mAllButtonContainers.get(mDisplayingLayoutIndex));
+            if (mNeedsNav) mBar.setCurrentLayout(mCurrentLayout);
         }
     };
 
@@ -712,8 +724,7 @@ public class NavigationBarView extends LinearLayout {
 
                         for(int i=0;i<mButtonLayouts;i++)
                             mButtonContainerStrings[i] = Settings.System.getString(r, buttonSettings[i]);
-
-                            loadButtonArrays();
+                        loadButtonArrays();
                     }
             }};
 

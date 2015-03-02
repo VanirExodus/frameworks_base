@@ -331,6 +331,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     View mFlipSettingsView;
     private QSPanel mQSPanel;
     private DevForceNavbarObserver mDevForceNavbarObserver;
+    private int mCurrentLayout = 0;
     boolean mSearchPanelAllowed = true;
     String mGreeting = "";
 
@@ -607,6 +608,9 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         public void update() {
             boolean visible = Settings.System.getIntForUser(mContext.getContentResolver(),
                     Settings.System.DEV_FORCE_SHOW_NAVBAR, 0, UserHandle.USER_CURRENT) == 1;
+            if (mNavigationBarView != null) {
+                mCurrentLayout = mNavigationBarView.getCurrentLayout();
+            }
 
             if (visible) {
                 forceAddNavigationBar();
@@ -621,6 +625,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         }
     }
 
+    @Override
+    public void setCurrentLayout(int layout) {
+        mCurrentLayout = layout;
+    }
+
     private void forceAddNavigationBar() {
         // If we have no Navbar view and we should have one, create it
         if (mNavigationBarView != null) {
@@ -630,10 +639,11 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
         mNavigationBarView =
                 (NavigationBarView) View.inflate(mContext, R.layout.navigation_bar, null);
 
-        mNavigationBarView.setDisabledFlags(mDisabled);
         mNavigationBarView.setBar(this);
         mNavigationBarView.updateResources(getNavbarThemedResources());
         addNavigationBar();
+        mNavigationBarView.notifyLayoutReset(mCurrentLayout);
+        mNavigationBarView.setDisabledFlags(mDisabled);
     }
 
     // ensure quick settings is disabled until the current user makes it through the setup wizard
