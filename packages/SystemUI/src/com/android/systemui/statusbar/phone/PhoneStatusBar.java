@@ -530,7 +530,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
             mGreeting = Settings.System.getStringForUser(resolver,
                     Settings.System.STATUS_BAR_GREETING,
                     UserHandle.USER_CURRENT);
-            if (mGreeting != null && !TextUtils.isEmpty(mGreeting)) {
+            if (mGreeting != null && !TextUtils.isEmpty(mGreeting) && mExodusLabel != null) {
                 mExodusLabel.setText(mGreeting);
             }
 
