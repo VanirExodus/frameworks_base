@@ -3149,10 +3149,14 @@ public final class Settings {
         public static final String POINTER_SPEED = "pointer_speed";
 
         /**
-         *
          * @hide
          */
         public static final String NAVIGATION_BAR_BUTTONS = "navigation_bar_buttons";
+
+        /**
+         * @hide
+         */
+        public static final String NAVIGATION_BAR_RESTORE = "navigation_bar_restore";
 
         /**
          * @hide

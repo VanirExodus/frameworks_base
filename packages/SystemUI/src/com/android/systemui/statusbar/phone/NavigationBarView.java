@@ -35,9 +35,11 @@ import android.graphics.drawable.Drawable;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -134,6 +136,7 @@ public class NavigationBarView extends LinearLayout {
     private boolean showingIME;
     private int mButtonLayouts;
     private int mCurrentLayout = 0; //the first one
+    private int mRestoredLayout = 0;
     private float mButtonWidth, mMenuButtonWidth, mLayoutChangerWidth;
 
     //for slightly de-derped layout handling
@@ -260,13 +263,17 @@ public class NavigationBarView extends LinearLayout {
         } catch (RemoteException ex) {
         }
 
+        mRestoredLayout = Settings.System.getInt(cr, Settings.System.NAVIGATION_BAR_RESTORE, 0);
         mLegacyMenu = Settings.System.getInt(cr, Settings.System.NAVIGATION_BAR_SIDEKEYS, 1) == 1;
         mImeLayout = Settings.System.getInt(cr, Settings.System.NAVIGATION_BAR_ARROWS, 0) == 1;
         mButtonLayouts = Settings.System.getInt(cr, Settings.System.NAVIGATION_BAR_ALTERNATE_LAYOUTS, 1);
         for(int i=0;i<mButtonLayouts;i++)
             mButtonContainerStrings[i] = Settings.System.getString(cr, buttonSettings[i]);
-        if (mButtonLayouts == 1)
+        if (mButtonLayouts == 1) {
             mCurrentLayout = 0;
+        } else {
+			mCurrentLayout = mRestoredLayout;
+		}
         mIMEKeyLayout = NavbarConstants.defaultIMEKeyLayout(mContext);
         mDefaultLayout = NavbarConstants.defaultNavbarLayout(mContext);
         mLongPressTimeout = Settings.System.getInt(cr,
@@ -712,8 +719,7 @@ public class NavigationBarView extends LinearLayout {
 
                         for(int i=0;i<mButtonLayouts;i++)
                             mButtonContainerStrings[i] = Settings.System.getString(r, buttonSettings[i]);
-
-                            loadButtonArrays();
+                        loadButtonArrays();
                     }
             }};
 
@@ -925,6 +931,15 @@ public class NavigationBarView extends LinearLayout {
         boolean needsHomeActionListener = !((KeyButtonView) getButtonView(ACTION_HOME)).mHasLongAction;
         if (needsHomeActionListener) mBar.setHomeActionListener();
         }
+        // Save the layout for the next reboot
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                Settings.System.putIntForUser(mContext.getContentResolver(),
+                        Settings.System.NAVIGATION_BAR_RESTORE, mCurrentLayout,
+                        UserHandle.USER_CURRENT);
+            }
+        });
     }
 
     public boolean isVertical() {
