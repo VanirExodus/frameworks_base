@@ -128,6 +128,7 @@ import android.widget.TextView;
 
 import com.android.internal.statusbar.StatusBarIcon;
 import com.android.internal.util.cm.ActionUtils;
+import com.android.internal.widget.LockPatternUtils;
 import com.android.keyguard.KeyguardHostView.OnDismissAction;
 import com.android.keyguard.ViewMediatorCallback;
 import com.android.systemui.BatteryMeterView;
@@ -333,6 +334,7 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
     private DevForceNavbarObserver mDevForceNavbarObserver;
     boolean mSearchPanelAllowed = true;
     String mGreeting = "";
+    LockPatternUtils mLockPatternUtils;
 
     // immersive booleans for onConfigurationChange
     private boolean mImmersive = false;
@@ -3776,6 +3778,28 @@ public class PhoneStatusBar extends BaseStatusBar implements DemoMode,
                         && mGesturePanelView.isGesturePanelAttached()) removeGesturePanelView();
             }
             else if (Intent.ACTION_SCREEN_ON.equals(action)) {
+                if (mShowLabel && mGreeting != null && !TextUtils.isEmpty(mGreeting)) {
+                    final LockPatternUtils lockPatternUtils = new LockPatternUtils(context);
+                    if (mLockPatternUtils.isLockScreenDisabled()) {
+                        if (mNotificationIconArea.getVisibility() != View.INVISIBLE) {
+                            mNotificationIconArea.setAlpha(0f);
+                            mNotificationIconArea.setVisibility(View.INVISIBLE);
+                        }
+                        mExodusLabel.setVisibility(View.VISIBLE);
+                        mExodusLabel.animate().cancel();
+                        mExodusLabel.animate()
+                                .alpha(1f)
+                                .setDuration(320)
+                                .setInterpolator(ALPHA_IN)
+                                .setStartDelay(50)
+                                .withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                labelAnimatorFadeOut(true);
+                            }
+                        });
+                    }
+                }
                 mScreenOn = true;
                 // work around problem where mDisplay.getRotation() is not stable while screen is off (bug 7086018)
                 repositionNavigationBar();
