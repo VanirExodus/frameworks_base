@@ -1907,13 +1907,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
             if (!mImmersiveState || mOrientationImmersiveState == 1) {
                 mImmersiveModeBehavior = 0;
-            } else {
-                mImmersiveModeBehavior = Settings.System.getIntForUser(resolver,
-                        Settings.System.GLOBAL_IMMERSIVE_MODE_STYLE, 2, UserHandle.USER_CURRENT);
-            }
-
-            if (mGlobalImmersiveModeStyle != mImmersiveModeBehavior) {
-                mGlobalImmersiveModeStyle = mImmersiveModeBehavior;
             }
 
             mNavigationBarLeftInLandscape = Settings.System.getIntForUser(resolver,
@@ -2033,9 +2026,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     Settings.System.GLOBAL_IMMERSIVE_MODE_STYLE, 2, UserHandle.USER_CURRENT);
         }
 
-        if (mGlobalImmersiveModeStyle != mImmersiveModeBehavior) {
-            mGlobalImmersiveModeStyle = mImmersiveModeBehavior;
-        }
         if (mImmersiveModeConfirmation != null) {
             mImmersiveModeConfirmation.loadSetting(mCurrentUserId);
         }
@@ -7008,6 +6998,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         boolean transientStatusBarAllowed =
                 mStatusBar != null && (
                 hideStatusBarWM
+                || hideStatusBarSysui && mImmersiveState
                 || (hideStatusBarSysui && immersiveSticky)
                 || statusBarHasFocus);
 
@@ -7085,6 +7076,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private boolean isImmersiveMode(int vis) {
         final int flags = View.SYSTEM_UI_FLAG_IMMERSIVE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        updateImmersiveModeVisibility(vis);
         return ((vis & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) != 0 || (vis & View.SYSTEM_UI_FLAG_FULLSCREEN) != 0)
                 && (vis & flags) != 0;
     }
