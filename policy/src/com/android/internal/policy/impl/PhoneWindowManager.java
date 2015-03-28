@@ -211,6 +211,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     int mUserNavBarHeightLand;
     int mUserNavBarWidth;
 
+    boolean mQuickBootEnabled;
+
     /**
      * These are the system UI flags that, when changing, can cause the layout
      * of the screen to change.
@@ -867,6 +869,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     UserHandle.USER_ALL);
             resolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.NAVBAR_LEFT_IN_LANDSCAPE), false, this,
+                    UserHandle.USER_ALL);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.ENABLE_QUICKBOOT), false, this,
                     UserHandle.USER_ALL);
             updateSettings();
         }
@@ -1913,6 +1918,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mGlobalImmersiveModeStyle = mImmersiveModeBehavior;
             }
 
+            mQuickBootEnabled = Settings.System.getIntForUser(resolver,
+                    Settings.System.ENABLE_QUICKBOOT, 0, UserHandle.USER_CURRENT) == 1;
+
             mNavigationBarLeftInLandscape = Settings.System.getIntForUser(resolver,
                     Settings.System.NAVBAR_LEFT_IN_LANDSCAPE, 0, UserHandle.USER_CURRENT) == 1;
 
@@ -2934,6 +2942,19 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (mPendingMetaAction && !KeyEvent.isMetaKey(keyCode)) {
             mPendingMetaAction = false;
         }
+
+        if (!virtualKey && down && repeatCount == 0) {
+            switch (keyCode) {
+                case KeyEvent.KEYCODE_HOME:
+                case KeyEvent.KEYCODE_MENU:
+                case KeyEvent.KEYCODE_BACK:
+                case KeyEvent.KEYCODE_APP_SWITCH:
+                case KeyEvent.KEYCODE_ASSIST:
+                     mPowerManager.cpuBoost(750000);
+                     if (DEBUG) Log.i(TAG, "power manager cpuBoost(750000) for hardware key action.");
+                     break;
+             }
+         }
 
         // First we always handle the home key here, so applications
         // can never break it, although if keyguard is on, we do let
@@ -5264,19 +5285,21 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         final int keyCode = event.getKeyCode();
         final int scanCode = event.getScanCode();
 
-        if (SystemProperties.getInt("sys.quickboot.enable", 0) == 1) {
+        if (mQuickBootEnabled) {
+            if (SystemProperties.getInt("sys.quickboot.enable", 0) == 1) {
 
-            if (keyCode == KeyEvent.KEYCODE_POWER && !interactive) {
-                if(down){
-                    acquireQuickBootWakeLock();
-                    mHandler.postDelayed(mQuickBootPowerLongPress, mLongPressPoweronTime);
-                } else {
-                    releaseQuickBootWakeLock();
-                    mHandler.removeCallbacks(mQuickBootPowerLongPress);
+                if (keyCode == KeyEvent.KEYCODE_POWER && !interactive) {
+                    if (down) {
+                        acquireQuickBootWakeLock();
+                        mHandler.postDelayed(mQuickBootPowerLongPress, mLongPressPoweronTime);
+                    } else {
+                        releaseQuickBootWakeLock();
+                        mHandler.removeCallbacks(mQuickBootPowerLongPress);
+                    }
                 }
+                // ignore this event
+                return 0;
             }
-            // ignore this event
-            return 0;
         }
 
         final boolean isInjected = (policyFlags & WindowManagerPolicy.FLAG_INJECTED) != 0;
