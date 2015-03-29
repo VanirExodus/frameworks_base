@@ -3349,6 +3349,13 @@ public final class Settings {
         public static final String REVERSE_LOOKUP_PROVIDER = "reverse_lookup_provider";
 
         /**
+         * Screenshod sound enable, This is the noise made when taeking a screesnhot
+         * Defaults to 1 - sounds enabled
+         * @hide
+         */
+        public static final String SCREENSHOT_SHUTTER_SOUND = "screenshot_shutter_sound";
+
+        /**
          * The OpenCNAM paid account ID
          *
          * @hide
