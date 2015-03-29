@@ -528,6 +528,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mHomePressed;
     boolean mHomeConsumed;
     boolean mHomeDoubleTapPending;
+    boolean mDoubleTapActionPending;
     boolean mMenuPressed;
     boolean mAppSwitchLongPressed;
     Intent mHomeIntent;
@@ -550,12 +551,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private int mLongPressOnHomeBehavior = -1;
     private int mPressOnMenuBehavior = -1;
     private int mLongPressOnMenuBehavior = -1;
+    private int mDoubleTapOnMenuBehavior = -1;
     private int mPressOnAssistBehavior = -1;
     private int mLongPressOnAssistBehavior = -1;
+    private int mDoubleTapOnAssistBehavior = -1;
     private int mPressOnAppSwitchBehavior = -1;
     private int mLongPressOnAppSwitchBehavior = -1;
+    private int mDoubleTapOnAppSwitchBehavior = -1;
     private int mPressOnBackBehavior = -1;
     private int mLongPressOnBackBehavior = -1;
+    private int mDoubleTapOnBackBehavior = -1;
 
     // used when not performing the default action
     private boolean mBackDoCustomAction;
@@ -1367,6 +1372,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     };
 
+    private final Runnable mDoubleTapTimeoutRunnable = new Runnable() {
+        @Override
+        public void run() {
+			// we've timed out.. lets fire the single press action
+			mDoubleTapActionPending = false;
+            performKeyAction(mPressOnMenuBehavior);
+        }
+    };
+
     /** {@inheritDoc} */
     @Override
     public void init(Context context, IWindowManager windowManager,
@@ -1606,7 +1620,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         Settings.System.KEY_HOME_DOUBLE_TAP_ACTION,
                         mDoubleTapOnHomeBehavior, UserHandle.USER_CURRENT);
                 mHasMenuKeyEnabled = mLongPressOnHomeBehavior == KEY_ACTION_MENU
-                        || mDoubleTapOnHomeBehavior == KEY_ACTION_MENU;
+                        || mDoubleTapOnHomeBehavior == KEY_ACTION_MENU
+                        || mPressOnHomeBehavior == KEY_ACTION_MENU;
             } else {
                 mPressOnHomeBehavior = KEY_ACTION_NOTHING;
                 mLongPressOnHomeBehavior = KEY_ACTION_NOTHING;
@@ -1624,11 +1639,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mLongPressOnMenuBehavior = Settings.System.getIntForUser(resolver,
                         Settings.System.KEY_MENU_LONG_PRESS_ACTION,
                         mLongPressOnMenuBehavior, UserHandle.USER_CURRENT);
+                mDoubleTapOnMenuBehavior = Settings.System.getIntForUser(resolver,
+                        Settings.System.KEY_MENU_DOUBLE_TAP_ACTION,
+                        mDoubleTapOnMenuBehavior, UserHandle.USER_CURRENT);
                 mHasMenuKeyEnabled |= mPressOnMenuBehavior == KEY_ACTION_MENU
-                        || mLongPressOnMenuBehavior == KEY_ACTION_MENU;
+                        || mLongPressOnMenuBehavior == KEY_ACTION_MENU
+                        || mDoubleTapOnMenuBehavior == KEY_ACTION_MENU;
             } else {
                 mPressOnMenuBehavior = KEY_ACTION_NOTHING;
                 mLongPressOnMenuBehavior = KEY_ACTION_NOTHING;
+                mDoubleTapOnMenuBehavior = KEY_ACTION_NOTHING;
             }
         }
 
@@ -1642,11 +1662,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mLongPressOnBackBehavior = Settings.System.getIntForUser(resolver,
                         Settings.System.KEY_BACK_LONG_PRESS_ACTION,
                         mLongPressOnBackBehavior, UserHandle.USER_CURRENT);
+                mDoubleTapOnBackBehavior = Settings.System.getIntForUser(resolver,
+                        Settings.System.KEY_BACK_DOUBLE_TAP_ACTION,
+                        mDoubleTapOnBackBehavior, UserHandle.USER_CURRENT);
                 mHasMenuKeyEnabled |= mPressOnBackBehavior == KEY_ACTION_MENU
-                        || mLongPressOnBackBehavior == KEY_ACTION_MENU;
+                        || mLongPressOnBackBehavior == KEY_ACTION_MENU
+                        || mDoubleTapOnBackBehavior == KEY_ACTION_MENU;
             } else {
                 mPressOnBackBehavior = KEY_ACTION_NOTHING;
                 mLongPressOnBackBehavior = KEY_ACTION_NOTHING;
+                mDoubleTapOnBackBehavior = KEY_ACTION_NOTHING;
             }
         }
 
@@ -1660,11 +1685,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mLongPressOnAssistBehavior = Settings.System.getIntForUser(resolver,
                         Settings.System.KEY_ASSIST_LONG_PRESS_ACTION,
                         mLongPressOnAssistBehavior, UserHandle.USER_CURRENT);
+                mDoubleTapOnAssistBehavior = Settings.System.getIntForUser(resolver,
+                        Settings.System.KEY_ASSIST_DOUBLE_TAP_ACTION,
+                        mDoubleTapOnAssistBehavior, UserHandle.USER_CURRENT);
                 mHasMenuKeyEnabled |= mPressOnAssistBehavior == KEY_ACTION_MENU
-                        || mLongPressOnAssistBehavior == KEY_ACTION_MENU;
+                        || mLongPressOnAssistBehavior == KEY_ACTION_MENU
+                        || mDoubleTapOnAssistBehavior == KEY_ACTION_MENU;
             } else {
                 mPressOnAssistBehavior = KEY_ACTION_NOTHING;
                 mLongPressOnAssistBehavior = KEY_ACTION_NOTHING;
+                mDoubleTapOnAssistBehavior = KEY_ACTION_NOTHING;
             }
         }
 
@@ -1678,11 +1708,16 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mLongPressOnAppSwitchBehavior = Settings.System.getIntForUser(resolver,
                         Settings.System.KEY_APP_SWITCH_LONG_PRESS_ACTION,
                         mLongPressOnAppSwitchBehavior, UserHandle.USER_CURRENT);
+                mDoubleTapOnAppSwitchBehavior = Settings.System.getIntForUser(resolver,
+                        Settings.System.KEY_APP_SWITCH_DOUBLE_TAP_ACTION,
+                        mDoubleTapOnAppSwitchBehavior, UserHandle.USER_CURRENT);
                 mHasMenuKeyEnabled |= mPressOnAppSwitchBehavior == KEY_ACTION_MENU
-                        || mLongPressOnAppSwitchBehavior == KEY_ACTION_MENU;
+                        || mLongPressOnAppSwitchBehavior == KEY_ACTION_MENU
+                        || mDoubleTapOnAppSwitchBehavior == KEY_ACTION_MENU;
             } else {
                 mPressOnAppSwitchBehavior = KEY_ACTION_NOTHING;
-                mLongPressOnAppSwitchBehavior = KEY_ACTION_NOTHING;
+                mLongPressOnAppSwitchBehavior = KEY_ACTION_NOTHING
+                mDoubleTapOnAppSwitchBehavior = KEY_ACTION_NOTHING;
             }
         }
 
@@ -3057,8 +3092,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             }
 
             if (down) {
-                if (repeatCount == 0 && mPressOnMenuBehavior == KEY_ACTION_APP_SWITCH
-                        || mLongPressOnMenuBehavior == KEY_ACTION_APP_SWITCH) {
+                if (repeatCount == 0 && !mDoubleTapActionPending
+                        && mPressOnMenuBehavior == KEY_ACTION_APP_SWITCH
+                        || mLongPressOnMenuBehavior == KEY_ACTION_APP_SWITCH
+                        || mDoubleTapOnMenuBehavior == KEY_ACTION_APP_SWITCH) {
                     preloadRecentApps();
                 }
                 if (repeatCount == 0) {
@@ -3067,6 +3104,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         Intent intent = new Intent(Intent.ACTION_BUG_REPORT);
                         mContext.sendOrderedBroadcastAsUser(intent, UserHandle.CURRENT,
                                 null, null, null, 0, null, null);
+                        if (mDoubleTapOnMenuBehavior != KEY_ACTION_NOTHING) {
+                            mDoubleTapActionPending = false;
+					        mHandler.removeCallbacks(mDoubleTapTimeoutRunnable);
+						}
                         return -1;
                     } else if (SHOW_PROCESSES_ON_ALT_MENU &&
                             (metaState & KeyEvent.META_ALT_ON) == KeyEvent.META_ALT_ON) {
@@ -3082,11 +3123,19 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         }
                         Settings.Global.putInt(
                                 res, Settings.Global.SHOW_PROCESSES, shown ? 0 : 1);
+                        if (mDoubleTapOnMenuBehavior != KEY_ACTION_NOTHING) {
+                            mDoubleTapActionPending = false;
+					        mHandler.removeCallbacks(mDoubleTapTimeoutRunnable);
+						}
                         return -1;
                     }
                 } else if (longPress) {
                     if (unpinActivity()) {
                         performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false);
+                        if (mDoubleTapOnMenuBehavior != KEY_ACTION_NOTHING) {
+                            mDoubleTapActionPending = false;
+					        mHandler.removeCallbacks(mDoubleTapTimeoutRunnable);
+						}
                         return -1;
                     }
                     if (!keyguardOn && mLongPressOnMenuBehavior != KEY_ACTION_NOTHING) {
@@ -3096,18 +3145,43 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                         performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false);
                         performKeyAction(mLongPressOnMenuBehavior);
                         mMenuPressed = false;
+                        if (mDoubleTapOnMenuBehavior != KEY_ACTION_NOTHING) {
+                            mDoubleTapActionPending = false;
+					        mHandler.removeCallbacks(mDoubleTapTimeoutRunnable);
+						}
                         return -1;
                     }
                 }
             }
             if (!down && mMenuPressed) {
-                if (mPressOnMenuBehavior != KEY_ACTION_APP_SWITCH) {
+                if (mPressOnMenuBehavior != KEY_ACTION_APP_SWITCH
+                        || mDoubleTapOnMenuBehavior != KEY_ACTION_APP_SWITCH) {
                     cancelPreloadRecentApps();
                 }
                 mMenuPressed = false;
-                if (!canceled) {
-                    performKeyAction(mPressOnMenuBehavior);
-                }
+
+                if (mDoubleTapOnMenuBehavior != KEY_ACTION_NOTHING) {
+					    if (!mDoubleTapActionPending) {
+							mDoubleTapActionPending = true;
+							mHandler.removeCallbacks(mDoubleTapTimeoutRunnable);
+							mHandler.postDelayed(mDoubleTapTimeoutRunnable,
+									ViewConfiguration.getDoubleTapTimeout());
+						} else {
+							if (!canceled) {
+								mDoubleTapActionPending = false;
+					            mHandler.removeCallbacks(mDoubleTapTimeoutRunnable);
+                                performKeyAction(mDoubleTapOnMenuBehavior);
+							} else {
+								mDoubleTapActionPending = false;
+								mHandler.removeCallbacks(mDoubleTapTimeoutRunnable);
+							}
+                        }
+                } else {
+                    if (!canceled) {
+					    mHandler.removeCallbacks(mDoubleTapTimeoutRunnable);
+                        performKeyAction(mPressOnMenuBehavior);
+                    }
+				}
             }
             return -1;
         } else if (keyCode == KeyEvent.KEYCODE_SEARCH) {
