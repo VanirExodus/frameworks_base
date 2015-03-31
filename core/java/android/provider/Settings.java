@@ -2199,6 +2199,12 @@ public final class Settings {
         @Deprecated
         public static final String QS_USE_MAIN_TILES = Secure.QS_USE_MAIN_TILES;
 
+        /** Whether to vibrate when quick settings tile is pressed.
+         *
+         * @hide
+         */
+        public static final String QUICK_SETTINGS_TILES_VIBRATE = "quick_settings_vibrate";
+
         /**
          * Control whether the process CPU usage meter should be shown.
          *
