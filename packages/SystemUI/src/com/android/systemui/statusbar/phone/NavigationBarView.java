@@ -272,8 +272,8 @@ public class NavigationBarView extends LinearLayout {
         if (mButtonLayouts == 1) {
             mCurrentLayout = 0;
         } else {
-			mCurrentLayout = mRestoredLayout;
-		}
+            mCurrentLayout = mRestoredLayout;
+        }
         mIMEKeyLayout = NavbarConstants.defaultIMEKeyLayout(mContext);
         mDefaultLayout = NavbarConstants.defaultNavbarLayout(mContext);
         mLongPressTimeout = Settings.System.getInt(cr,
@@ -850,6 +850,7 @@ public class NavigationBarView extends LinearLayout {
             for (int j = 0; j < length; j++) {
                 mInfo = buttonsArray.get(j);
                 mButton = new KeyButtonView(mContext, null);
+                mButton.setDeviceOrientation(landscape, mTablet);
                 mButton.setButtonActions(mInfo);
                 mButton.setLongPressTimeout(mLongPressTimeout);
                 mButton.setLayoutParams(getLayoutParams(landscape, mButtonWidth, mTablet ? 1f : 0.5f));
