@@ -101,6 +101,8 @@ public class KeyButtonView extends ImageView {
     public boolean mHasBlankSingleAction = false, mHasDoubleAction, mHasLongAction;
     boolean mIsDPadAction = false;
     boolean mHasSingleAction = false;
+    private boolean mIsLandscape = false;
+    private boolean mTablet = false;
 
     public static PowerManager getPowerManagerService(Context context) {
         if (mPm == null) mPm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
@@ -146,6 +148,11 @@ public class KeyButtonView extends ImageView {
         setBackground(mRipple = new KeyButtonRipple(context, this));
     }
 
+    public void setDeviceOrientation(boolean landscape, boolean tablet) {
+		mIsLandscape = landscape;
+		mTablet = tablet;
+	}
+
     public void setButtonActions(KeyButtonInfo actions) {
         this.mActions = actions;
 
@@ -188,7 +195,11 @@ public class KeyButtonView extends ImageView {
                 setImageDrawable(new BitmapDrawable(res, f.getAbsolutePath()));
             }
         } else if (mHasSingleAction) {
-            setImageDrawable(NavbarUtils.getIconImage(mContext, mActions.singleAction));
+			if (mIsLandscape && !mTablet) {
+				setImageDrawable(NavbarUtils.getLandscapeIconImage(mContext, mActions.singleAction));
+		    } else {
+                setImageDrawable(NavbarUtils.getIconImage(mContext, mActions.singleAction));
+			}
         } else {
             setImageResource(R.drawable.ic_sysbar_null);
         }

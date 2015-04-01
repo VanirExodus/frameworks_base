@@ -850,6 +850,7 @@ public class NavigationBarView extends LinearLayout {
             for (int j = 0; j < length; j++) {
                 mInfo = buttonsArray.get(j);
                 mButton = new KeyButtonView(mContext, null);
+                mButton.setDeviceOrientation(landscape, mTablet);
                 mButton.setButtonActions(mInfo);
                 mButton.setLongPressTimeout(mLongPressTimeout);
                 mButton.setLayoutParams(getLayoutParams(landscape, mButtonWidth, mTablet ? 1f : 0.5f));
