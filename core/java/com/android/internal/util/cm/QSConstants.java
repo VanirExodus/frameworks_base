@@ -50,6 +50,7 @@ public class QSConstants {
     public static final String TILE_HEADS_UP = "heads_up";
     public static final String TILE_AMBIENT_DISPLAY = "ambient_display";
     public static final String TILE_SYNC = "sync";
+    public static final String TILE_UPDATER = "updater";
 
     protected static final ArrayList<String> TILES_AVAILABLE = new ArrayList<String>();
 
@@ -62,6 +63,7 @@ public class QSConstants {
         TILES_AVAILABLE.add(TILE_FLASHLIGHT);
         TILES_AVAILABLE.add(TILE_LOCATION);
         TILES_AVAILABLE.add(TILE_CAST);
+        TILES_AVAILABLE.add(TILE_UPDATER);
         TILES_AVAILABLE.add(TILE_INVERSION);
         TILES_AVAILABLE.add(TILE_HOTSPOT);
         TILES_AVAILABLE.add(TILE_NOTIFICATIONS);

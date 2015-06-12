@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+** Copyright 2015 Exodus
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+*/
+-->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <!-- #MorphRom reboot message -->
+    <string name="restarting_ui">Restarting UI\u2026</string>
+    <string name="confirmation_msg">System UI needs to restart in order to apply this change!</string>
+    <string name="exodus_start_title">Exodus is starting\u2026</string>
+    <string name="exodus_is_upgrading">Exodus is upgrading\u2026</string>
+    <string name="cm_start_title">CyanogenMod is starting\u2026</string>
+    <string name="cm_is_upgrading">CyanogenMod is upgrading\u2026</string>
+
+    <!-- Vanir Action Stuff-->
+    <string name="action_null">Blank</string>
+    <string name="action_home">Default: Home</string>
+    <string name="action_back">Default: Back</string>
+    <string name="action_recents">Default: Recents</string>
+    <string name="action_search">Search: In-app search</string>
+    <string name="action_screenshot">Screenshot</string>
+    <string name="action_sleep">Sleep</string>
+    <string name="action_menu">Menu</string>
+    <string name="action_ime">Open IME Switcher</string>
+    <string name="action_kill">Kill task</string>
+    <string name="action_last_app">Last app</string>
+    <string name="action_power">Screen off</string>
+    <string name="action_blank">Empty spacer</string>
+    <string name="action_notifications">Notifications</string>
+    <string name="action_assist">Search: Google Now</string>
+    <string name="action_robocop">Reboot menu</string>
+    <string name="action_voiceassist">Search: Voice search</string>
+    <string name="action_torch">Torch</string>
+    <string name="action_silent">Ring/Silent</string>
+    <string name="action_vib">Ring/Vibrate</string>
+    <string name="action_silent_vib">Ring/Vibrate/Silent</string>
+    <string name="action_ribbon">Ribbon</string>
+    <string name="action_app">Custom App/Vanir action</string>
+    <string name="action_arrow_left">Cursor left</string>
+    <string name="action_arrow_right">Cursor right</string>
+    <string name="action_arrow_up">Cursor up</string>
+    <string name="action_arrow_down">Cursor down</string>
+    <string name="gesture_actions">Gesture panel</string>
+
+    <string name="def_ime_layout">**arrow_left**,,,|**arrow_up**,,,|**arrow_down**,,,|**arrow_right**,,,</string>
+    <string name="def_navbar_layout">**back**,,,|**home**,,,|**recents**,,,</string>
+
+    <!-- label for item that toggles global immersive mode -->
+    <string name="global_actions_toggle_global_immersive_mode">Immersive mode</string>
+    <!-- status message in phone options dialog for when expand desktop mode is on -->
+    <string name="global_actions_global_immersive_mode_on_status">Enabled</string>
+    <!-- status message in phone options dialog for when expand desktop mode is off -->
+    <string name="global_actions_global_immersive_mode_off_status">Disabled</string>
+    <!-- label for screen record item in phone options dialog -->
+    <string name="global_action_screen_record">Screen record</string>
+
+    <!-- Zen mode buttons -->
+    <string name="silent_mode_priority">Priority</string>
+    <string name="silent_mode_none">None</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_recordScreen">Record content being displayed</string>
+    <string name="record">Record</string>
+    <string name="screen_recorder">Screen recorder</string>
+
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_recordScreen">Allows the app to record the users screen</string>
+
+</resources>
