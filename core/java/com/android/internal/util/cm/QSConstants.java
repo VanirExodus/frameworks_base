@@ -51,6 +51,8 @@ public class QSConstants {
     public static final String TILE_AMBIENT_DISPLAY = "ambient_display";
     public static final String TILE_SYNC = "sync";
     public static final String TILE_UPDATER = "updater";
+    public static final String TILE_POWER_MENU = "togglePowerMenu"; //#PowerMenuTile
+    public static final String TILE_WIFI_NETWORK_NOTIFICATIONS = "wifi_network_notifications";
 
     protected static final ArrayList<String> TILES_AVAILABLE = new ArrayList<String>();
 
@@ -85,5 +87,7 @@ public class QSConstants {
         TILES_AVAILABLE.add(TILE_HEADS_UP);
         TILES_AVAILABLE.add(TILE_AMBIENT_DISPLAY);
         TILES_AVAILABLE.add(TILE_SYNC);
-    }
-}
+        TILES_AVAILABLE.add(TILE_POWER_MENU); //#PowerMenuTile
+        TILES_AVAILABLE.add(TILE_WIFI_NETWORK_NOTIFICATIONS);}    
+}    
+
