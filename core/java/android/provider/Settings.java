@@ -9255,6 +9255,13 @@ public final class Settings {
          * @hide
          */
         public static final String NAVIGATION_IME_LAYOUT = "navigation_ime_layout";
+        
+        /**
+         * Allow Wifi network notifications
+         * @hide
+         */
+         
+        public static final String WIFI_NETWORK_NOTIFICATIONS = "wifi_network_notifications";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
