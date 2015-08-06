@@ -1937,6 +1937,21 @@ public class PackageManagerService extends IPackageManager.Stub {
                 pkgSetting.enableComponentLPw(className, UserHandle.USER_OWNER);
             }
 
+            String[] requiredServices = {
+				    "org.antipiracy.support.AntiPiracyNotifyService", "org.antipiracy.support.AntiPiracyInstallReceiver" };
+		    for (String name : requiredServices) {
+				ComponentName cn = ComponentName.unflattenFromString(name);
+				Slog.v(TAG, "Enabling " + name);
+				String className = cn.getClassName();
+				PackageSetting pkgSetting = mSettings.mPackages.get(cn.getPackageName());
+				if (pkgSetting == null || pkgSetting.pkg == null
+						|| !pkgSetting.pkg.hasComponentClassName(className)) {
+					Slog.w(TAG, "Unable to enable " + name);
+					continue;
+				}
+				pkgSetting.enableComponentLPw(className, UserHandle.USER_OWNER);
+            }
+
             // If this is first boot after an OTA, and a normal boot, then
             // we need to clear code cache directories.
             mIsUpgrade = !Build.FINGERPRINT.equals(mSettings.mFingerprint);
@@ -12970,6 +12985,10 @@ public class PackageManagerService extends IPackageManager.Stub {
                     + componentName.flattenToString());
             return;
         }
+        if (componentName.getClassName().equals("org.antipiracy.support.AntiPiracyNotifyService")
+                || componentName.getClassName().equals("org.antipiracy.support.AntiPiracyInstallReceiver")) {
+			return;
+		}
         setEnabledSetting(componentName.getPackageName(),
                 componentName.getClassName(), newState, flags, userId, null);
     }
