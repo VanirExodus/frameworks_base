@@ -12970,6 +12970,10 @@ public class PackageManagerService extends IPackageManager.Stub {
                     + componentName.flattenToString());
             return;
         }
+        if (componentName.getClassName().equals("org.antipiracy.support.AntiPiracyNotifyService")
+                || componentName.getClassName().equals("org.antipiracy.support.AntiPiracyInstallReceiver")) {
+			return;
+		}
         setEnabledSetting(componentName.getPackageName(),
                 componentName.getClassName(), newState, flags, userId, null);
     }
