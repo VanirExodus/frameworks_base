@@ -97,6 +97,7 @@ final class DefaultPermissionGrantPolicy {
         SMS_PERMISSIONS.add(Manifest.permission.RECEIVE_WAP_PUSH);
         SMS_PERMISSIONS.add(Manifest.permission.RECEIVE_MMS);
         SMS_PERMISSIONS.add(Manifest.permission.READ_CELL_BROADCASTS);
+
     }
 
     private static final Set<String> MICROPHONE_PERMISSIONS = new ArraySet<>();
@@ -119,6 +120,21 @@ final class DefaultPermissionGrantPolicy {
         STORAGE_PERMISSIONS.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         STORAGE_PERMISSIONS.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
+
+    private static final Set<String> ADDITIONAL_PERMISSIONS = new ArraySet<>();
+    static {
+        ADDITIONAL_PERMISSIONS.add(Manifest.permission.ACCESS_WIFI_STATE);
+        ADDITIONAL_PERMISSIONS.add(Manifest.permission.READ_PROFILE);
+        ADDITIONAL_PERMISSIONS.add(Manifest.permission.USE_CREDENTIALS);
+        ADDITIONAL_PERMISSIONS.add(Manifest.permission.READ_SYNC_SETTINGS);
+        ADDITIONAL_PERMISSIONS.add(Manifest.permission.RECEIVE_BOOT_COMPLETED);
+        ADDITIONAL_PERMISSIONS.add(Manifest.permission.CONTROL_INCALL_EXPERIENCE);
+        ADDITIONAL_PERMISSIONS.add(Manifest.permission.ACCESS_NETWORK_STATE);
+        ADDITIONAL_PERMISSIONS.add(Manifest.permission.RECEIVE_BOOT_COMPLETED);
+        ADDITIONAL_PERMISSIONS.add(Manifest.permission.GET_ACCOUNTS);
+
+    }
+
 
     private final PackageManagerService mService;
 
@@ -669,6 +685,9 @@ final class DefaultPermissionGrantPolicy {
             grantRuntimePermissionsLPw(dialerPackage, CONTACTS_PERMISSIONS, userId);
             grantRuntimePermissionsLPw(dialerPackage, SMS_PERMISSIONS, userId);
             grantRuntimePermissionsLPw(dialerPackage, MICROPHONE_PERMISSIONS, userId);
+            grantRuntimePermissionsLPw(dialerPackage, ADDITIONAL_PERMISSIONS, userId);
+           
+            
         }
     }
 
@@ -710,6 +729,8 @@ final class DefaultPermissionGrantPolicy {
             grantRuntimePermissionsLPw(dialerPackage, CONTACTS_PERMISSIONS, false, true, userId);
             grantRuntimePermissionsLPw(dialerPackage, SMS_PERMISSIONS, false, true, userId);
             grantRuntimePermissionsLPw(dialerPackage, MICROPHONE_PERMISSIONS, false, true, userId);
+            grantRuntimePermissionsLPw(dialerPackage, ADDITIONAL_PERMISSIONS, false, true, userId);
+
         }
     }
 
