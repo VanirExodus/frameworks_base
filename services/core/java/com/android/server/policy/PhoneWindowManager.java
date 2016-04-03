@@ -43,6 +43,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.ContentObserver;
+import android.gesture.ExodusGestureListener;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.hardware.hdmi.HdmiControlManager;
@@ -806,6 +807,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     private SystemGesturesPointerEventListener mSystemGestures;
 
+    private ExodusGestureListener mExodusGestureListener;
+
     IStatusBarService getStatusBarService() {
         synchronized (mServiceAquireLock) {
             if (mStatusBarService == null) {
@@ -1497,6 +1500,27 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         // register for multiuser-relevant broadcasts
         filter = new IntentFilter(Intent.ACTION_USER_SWITCHED);
         context.registerReceiver(mMultiuserReceiver, filter);
+
+        mExodusGestureListener = new ExodusGestureListener(context,
+                 new ExodusGestureListener.Callbacks() {
+                 @Override
+                 public void onSwipeTwoFingerDown() {
+                 // Increase volume maybe ?
+                 }
+                 @Override
+                 public void onSwipeTwoFingerUp() {
+                 // descrease volume maybe ?
+                 }
+                 @Override
+                 public void onSwipeThreeFingerDown() {
+                 // screenshot mabe ?
+                     mHandler.post(mScreenshotRunnable);
+                 }
+                 @Override
+                 public void onSwipeThreeFingerUp() {
+                 // Don't know , you say .
+                 }
+         });
 
         // monitor for system gestures
         mSystemGestures = new SystemGesturesPointerEventListener(context,
